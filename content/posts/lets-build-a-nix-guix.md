@@ -1,5 +1,5 @@
 ---
-title: "Let's make a nix/guix"
+title: "Let's make a Nix/Guix"
 date: 2020-06-19T01:29:25Z
 draft: false
 toc: false
