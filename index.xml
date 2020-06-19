@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>My New Hugo Site</title>
+    <link>http://example.org/</link>
+    <description>Recent content on My New Hugo Site</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 19 Jun 2020 01:29:25 -0400</lastBuildDate>
+    
+	<atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>My First Post</title>
+      <link>http://example.org/posts/my-first-post/</link>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 -0400</pubDate>
+      
+      <guid>http://example.org/posts/my-first-post/</guid>
+      <description>Let&amp;rsquo;s create on ourself.
+For each of use let&amp;rsquo;s go with starlark for the config language. Starlark is a subset of python and should hopefully be easy for others to learn.
+We&amp;rsquo;ll need to figure out how to build the seed. The first executable that will start building other libraries. We&amp;rsquo;ll need a libc and a compiler. glibc and clang
+TODO look at seeds for guix/nix/others
+Let&amp;rsquo;s pick x and y.</description>
+    </item>
+    
+  </channel>
+</rss>

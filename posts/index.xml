@@ -1,0 +1,47 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+	<channel>
+		<title>Posts on My New Hugo Site</title>
+		<link>http://example.org/posts/</link>
+		<description>Recent content in Posts on My New Hugo Site</description>
+		<generator>Hugo -- gohugo.io</generator>
+		<language>en-us</language>
+		<lastBuildDate>Fri, 19 Jun 2020 01:29:25 -0400</lastBuildDate>
+		<atom:link href="http://example.org/posts/index.xml" rel="self" type="application/rss+xml" />
+		
+		<item>
+			<title>My First Post</title>
+			<link>http://example.org/posts/my-first-post/</link>
+			<pubDate>Fri, 19 Jun 2020 01:29:25 -0400</pubDate>
+			
+			<guid>http://example.org/posts/my-first-post/</guid>
+			<description>Let&amp;rsquo;s create on ourself.
+For each of use let&amp;rsquo;s go with starlark for the config language. Starlark is a subset of python and should hopefully be easy for others to learn.
+We&amp;rsquo;ll need to figure out how to build the seed. The first executable that will start building other libraries. We&amp;rsquo;ll need a libc and a compiler. glibc and clang
+TODO look at seeds for guix/nix/others
+Let&amp;rsquo;s pick x and y.</description>
+			<content type="html"><![CDATA[<p>Let&rsquo;s create on ourself.</p>
+<p>For each of use let&rsquo;s go with starlark for the config language. Starlark is a subset of python and
+should hopefully be easy for others to learn.</p>
+<p>We&rsquo;ll need to figure out how to build the seed. The first executable that will start building other libraries. We&rsquo;ll need a libc
+and a compiler. glibc and clang</p>
+<p>TODO look at seeds for guix/nix/others</p>
+<p>Let&rsquo;s pick x and y.</p>
+<p>Now let&rsquo;s make our first build, we&rsquo;re going to have to decide a few things right off the bat.</p>
+<p>What does the scripting api look like
+What does the input hashing look like
+How do we make network calls and verify hashes</p>
+<p>Explain nix derivations, hermes input hashing
+(apologize for not knowing about guix)</p>
+<p>We should sandbox but we can skip it for now</p>
+<p><a href="https://nixos.org/nix/manual/#ssec-derivation">https://nixos.org/nix/manual/#ssec-derivation</a></p>
+<blockquote>
+<p>If the build was successful, Nix scans each output path for references to input paths by looking for the hash parts of the input paths. Since these are potential runtime dependencies, Nix registers them as dependencies of the output paths.</p>
+</blockquote>
+<p>Build the thing, scan all the output paths for sources, mark them in gc.</p>
+<p>Build a language from the seed</p>
+<p>Build a program for the language</p>
+]]></content>
+		</item>
+		
+	</channel>
+</rss>
