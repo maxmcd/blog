@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Fri, 19 Jun 2020 01:29:25 -0400</lastBuildDate>
+    <lastBuildDate>Fri, 19 Jun 2020 01:29:25 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,7 +15,7 @@
     <item>
       <title>Let&#39;s make a nix/guix</title>
       <link>https://maxmcd.github.io/blog/posts/my-first-post/</link>
-      <pubDate>Fri, 19 Jun 2020 01:29:25 -0400</pubDate>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
       
       <guid>https://maxmcd.github.io/blog/posts/my-first-post/</guid>
       <description>Let&amp;rsquo;s create on ourself.
@@ -23,6 +23,25 @@ For each of use let&amp;rsquo;s go with starlark for the config language. Starla
 We&amp;rsquo;ll need to figure out how to build the seed. The first executable that will start building other libraries. We&amp;rsquo;ll need a libc and a compiler. glibc and clang
 TODO look at seeds for guix/nix/others
 Let&amp;rsquo;s pick x and y.</description>
+    </item>
+    
+    <item>
+      <title>Star: Go but in Python?</title>
+      <link>https://maxmcd.github.io/blog/posts/star/</link>
+      <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
+      
+      <guid>https://maxmcd.github.io/blog/posts/star/</guid>
+      <description>tl:dr star is a python(ish) programming environment that lets you call Go library functions. click down to the repl if you&amp;rsquo;d just like to play around
+Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&amp;rsquo;s not turing complete (no unbounded loops), it doesn&amp;rsquo;t have classes or higher level abstractions, it&amp;rsquo;s also deterministic and is somewhat safe to run untrusted user input.</description>
+    </item>
+    
+    <item>
+      <title></title>
+      <link>https://maxmcd.github.io/blog/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://maxmcd.github.io/blog/about/</guid>
+      <description>hello</description>
     </item>
     
   </channel>

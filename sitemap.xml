@@ -4,37 +4,52 @@
   
   <url>
     <loc>https://maxmcd.github.io/blog/</loc>
-    <lastmod>2020-06-19T12:46:48-04:00</lastmod>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.github.io/blog/tags/build/</loc>
-    <lastmod>2020-06-19T12:46:48-04:00</lastmod>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.github.io/blog/tags/go/</loc>
-    <lastmod>2020-06-19T12:46:48-04:00</lastmod>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.github.io/blog/posts/my-first-post/</loc>
-    <lastmod>2020-06-19T12:46:48-04:00</lastmod>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.github.io/blog/posts/</loc>
-    <lastmod>2020-06-19T12:46:48-04:00</lastmod>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.github.io/blog/tags/starlark/</loc>
-    <lastmod>2020-06-19T12:46:48-04:00</lastmod>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.github.io/blog/tags/</loc>
-    <lastmod>2020-06-19T12:46:48-04:00</lastmod>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.github.io/blog/tags/star/</loc>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.github.io/blog/posts/star/</loc>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.github.io/blog/about/</loc>
+    <priority>0</priority>
   </url>
   
 </urlset>

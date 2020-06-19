@@ -7,7 +7,7 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Fri, 19 Jun 2020 01:29:25 -0400</lastBuildDate>
+    <lastBuildDate>Fri, 19 Jun 2020 01:29:25 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.github.io/blog/tags/index.xml" rel="self" type="application/rss+xml" />
     
@@ -15,7 +15,7 @@
     <item>
       <title>build</title>
       <link>https://maxmcd.github.io/blog/tags/build/</link>
-      <pubDate>Fri, 19 Jun 2020 01:29:25 -0400</pubDate>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
       
       <guid>https://maxmcd.github.io/blog/tags/build/</guid>
       <description></description>
@@ -24,7 +24,7 @@
     <item>
       <title>go</title>
       <link>https://maxmcd.github.io/blog/tags/go/</link>
-      <pubDate>Fri, 19 Jun 2020 01:29:25 -0400</pubDate>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
       
       <guid>https://maxmcd.github.io/blog/tags/go/</guid>
       <description></description>
@@ -33,9 +33,18 @@
     <item>
       <title>starlark</title>
       <link>https://maxmcd.github.io/blog/tags/starlark/</link>
-      <pubDate>Fri, 19 Jun 2020 01:29:25 -0400</pubDate>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
       
       <guid>https://maxmcd.github.io/blog/tags/starlark/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>star</title>
+      <link>https://maxmcd.github.io/blog/tags/star/</link>
+      <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
+      
+      <guid>https://maxmcd.github.io/blog/tags/star/</guid>
       <description></description>
     </item>
     
