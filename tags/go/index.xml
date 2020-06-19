@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>go on </title>
-    <link>https://example.com/tags/go/</link>
+    <link>https://maxmcd.github.io/blog/tags/go/</link>
     <description>Recent content in go on </description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
     <lastBuildDate>Fri, 19 Jun 2020 01:29:25 -0400</lastBuildDate>
     
-	<atom:link href="https://example.com/tags/go/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://maxmcd.github.io/blog/tags/go/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Let&#39;s make a nix/guix</title>
-      <link>https://example.com/posts/my-first-post/</link>
+      <link>https://maxmcd.github.io/blog/posts/my-first-post/</link>
       <pubDate>Fri, 19 Jun 2020 01:29:25 -0400</pubDate>
       
-      <guid>https://example.com/posts/my-first-post/</guid>
+      <guid>https://maxmcd.github.io/blog/posts/my-first-post/</guid>
       <description>Let&amp;rsquo;s create on ourself.
 For each of use let&amp;rsquo;s go with starlark for the config language. Starlark is a subset of python and should hopefully be easy for others to learn.
 We&amp;rsquo;ll need to figure out how to build the seed. The first executable that will start building other libraries. We&amp;rsquo;ll need a libc and a compiler. glibc and clang
