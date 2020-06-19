@@ -1,10 +1,13 @@
 ---
-title: "My First Post"
+title: "Let's make a nix/guix"
 date: 2020-06-19T01:29:25-04:00
+draft: false
 toc: false
 images:
 tags:
-  - untagged
+  - build
+  - starlark
+  - go
 ---
 
 
