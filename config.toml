@@ -21,6 +21,9 @@ relativeURLs = false
   # noreferrerLinks = true
   # nofollowLinks = true
 
+[markup.goldmark.renderer]
+unsafe= true
+
 
 # consider -> https://gohugo.io/getting-started/configuration-markup
 
@@ -29,10 +32,10 @@ relativeURLs = false
   # Categories are disabled by default.
 
 [params]
-  dateform        = "Jan 2, 2006"
-  dateformShort   = "Jan 2"
+  dateform        = "Jan 02, 2006"
+  dateformShort   = "Jan 02"
   dateformNum     = "2006-01-02"
-  dateformNumTime = "2006-01-02 15:04 -0700"
+  dateformNumTime = "2006-01-02 15:04 UTC"
 
   # Metadata mostly used in document's head
   # description = ""
@@ -76,5 +79,5 @@ relativeURLs = false
 
   [[menu.main]]
     name = "About"
-    url = "about-hugo/"
+    url = "about/"
     weight = 20
