@@ -13,11 +13,11 @@
     
     
     <item>
-      <title>Let&#39;s make a nix/guix</title>
-      <link>https://maxmcd.github.io/blog/posts/my-first-post/</link>
+      <title>Let&#39;s make a Nix/Guix</title>
+      <link>https://maxmcd.github.io/blog/posts/lets-build-a-nix-guix/</link>
       <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
       
-      <guid>https://maxmcd.github.io/blog/posts/my-first-post/</guid>
+      <guid>https://maxmcd.github.io/blog/posts/lets-build-a-nix-guix/</guid>
       <description>Let&amp;rsquo;s create on ourself.
 For each of use let&amp;rsquo;s go with starlark for the config language. Starlark is a subset of python and should hopefully be easy for others to learn.
 We&amp;rsquo;ll need to figure out how to build the seed. The first executable that will start building other libraries. We&amp;rsquo;ll need a libc and a compiler. glibc and clang
