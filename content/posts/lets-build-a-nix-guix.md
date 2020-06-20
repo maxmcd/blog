@@ -1,7 +1,7 @@
 ---
 title: "Let's make a Nix/Guix"
 date: 2020-06-19T01:29:25Z
-draft: false
+draft: true
 toc: false
 images:
 tags:
