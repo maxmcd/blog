@@ -2,22 +2,22 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title></title>
-    <link>https://maxmcd.github.io/blog/</link>
+    <link>https://maxmcd.com/</link>
     <description>Recent content on </description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
     <lastBuildDate>Fri, 19 Jun 2020 01:29:25 +0000</lastBuildDate>
     
-	<atom:link href="https://maxmcd.github.io/blog/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://maxmcd.com/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Let&#39;s make a Nix/Guix</title>
-      <link>https://maxmcd.github.io/blog/posts/lets-build-a-nix-guix/</link>
+      <link>https://maxmcd.com/posts/lets-build-a-nix-guix/</link>
       <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
       
-      <guid>https://maxmcd.github.io/blog/posts/lets-build-a-nix-guix/</guid>
+      <guid>https://maxmcd.com/posts/lets-build-a-nix-guix/</guid>
       <description>Let&amp;rsquo;s create on ourself.
 For each of use let&amp;rsquo;s go with starlark for the config language. Starlark is a subset of python and should hopefully be easy for others to learn.
 We&amp;rsquo;ll need to figure out how to build the seed. The first executable that will start building other libraries. We&amp;rsquo;ll need a libc and a compiler. glibc and clang
@@ -27,20 +27,20 @@ Let&amp;rsquo;s pick x and y.</description>
     
     <item>
       <title>Star: Go but in Python?</title>
-      <link>https://maxmcd.github.io/blog/posts/star/</link>
+      <link>https://maxmcd.com/posts/star/</link>
       <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
       
-      <guid>https://maxmcd.github.io/blog/posts/star/</guid>
+      <guid>https://maxmcd.com/posts/star/</guid>
       <description>tl:dr star is a python(ish) programming environment that lets you call Go library functions. click down to the repl if you&amp;rsquo;d just like to play around
 Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&amp;rsquo;s not turing complete (no unbounded loops), it doesn&amp;rsquo;t have classes or higher level abstractions, it&amp;rsquo;s also deterministic and is somewhat safe to run untrusted user input.</description>
     </item>
     
     <item>
       <title></title>
-      <link>https://maxmcd.github.io/blog/about/</link>
+      <link>https://maxmcd.com/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://maxmcd.github.io/blog/about/</guid>
+      <guid>https://maxmcd.com/about/</guid>
       <description>hello</description>
     </item>
     
