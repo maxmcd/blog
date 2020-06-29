@@ -23,7 +23,7 @@ I'll outline the solutions to this problem that I've been able to find, and then
 
 ## Just use relative paths
 
-I was originally very optimistic about this idea. All build outputs would expect to run from within the nix store and if they needed a library they would point to the relative path of the library they need. Patching the [rpath](https://en.wikipedia.org/wiki/Rpath) of a binary with the $ORIGIN environment variable allows us to use this this strategy within binaries.
+I was originally very optimistic about this idea. All build outputs would expect to run from within the bramble store and if they needed a library they would point to the relative path of the library they need. Patching the [rpath](https://en.wikipedia.org/wiki/Rpath) of a binary with the $ORIGIN environment variable allows us to use this this strategy within executables.
 
 Seemed like all I needed to do from here was be careful with my build scripts and ensure there were tools to help others easily write relative paths into their builds.
 
@@ -36,9 +36,11 @@ Bazel is very opinionated and comes pre-baked with tools to build various langua
 
 The [spack](https://github.com/spack/spack) build tool support binary relocation: https://spack.readthedocs.io/en/latest/binary_caches.html#relocation
 
-You can read through the implementation [here](https://github.com/spack/spack/blob/f5467957bca49ca612cfc32710ed2ca8a943583d/lib/spack/spack/relocate.py). Spack just goes through and uses `pathelf` and `install_name_tool` to rewrite the applicable paths. This is interesting, and might work, but for the moment seems like it would miss various other paths within scripts or configuration.
+You can read through the implementation [here](https://github.com/spack/spack/blob/f5467957bca49ca612cfc32710ed2ca8a943583d/lib/spack/spack/relocate.py). Spack just goes through and uses `pathelf` and `install_name_tool` to rewrite the applicable paths. This is interesting, and might work, but for the moment seems like it would miss various other paths within scripts or configuration. Spack mentions this:
 
-This might be worth exploring at a later date, but seems like a non-starter because of the difficulties of trivially replacing paths that are not in binaries.
+> However, many packages compile paths into binary artifacts directly. In such cases, the build instructions of this package would need to be adjusted for better re-locatability.
+
+This might be worth exploring at a later date, maybe testing against various packages as they're build. For the moment it seems like a non-starter because of the difficulties of trivially replacing paths that are not in binaries.
 
 ## Pad the path
 
@@ -56,7 +58,7 @@ This is roughly the solution I ended up going with. Instead of using something l
 /Users/00000000001111111111/.bramble/sooooooooooo/
 ```
 
-This way, the path length is always the same, so it's easy for us to find it within build outputs and patch teh path to be something else. Changing a users username or changing the store location will now mean all build outputs need to be patched, but there is at least a clear path to do so.
+This way, the path length is always the same, so it's easy for us to find it within build outputs and patch it to be something else. Changing a users username or changing the store location will now mean all build outputs need to be patched, but there is at least a clear path to do so.
 
 ## Summary
 
