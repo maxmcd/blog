@@ -28,4 +28,5 @@ jobs:
       - name: Checkout and Deploy
         run: |
           set -ex
+          cd project
           ./tools/deploy.sh
