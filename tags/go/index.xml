@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Sat, 01 Feb 2020 22:32:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 19 Jun 2020 01:29:25 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.com/tags/go/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Let&#39;s make a Nix/Guix</title>
+      <link>https://maxmcd.com/posts/lets-make-a-nix-guix/</link>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/posts/lets-make-a-nix-guix/</guid>
+      <description>Nix (and the more recently created GNU Guix) are functional package managers. I&amp;rsquo;ve used NixOS for some time now and have thoroughly enjoyed using it. I was inspired by Andrew Chamber&amp;rsquo;s recently launched hermes to try implementing a simple version of Nix using Go and Starlark.
+A quick overview of Nix/Guix Nix and Guix are package managers that &amp;ldquo;utilize a purely functional deployment model where software is installed into unique directories generated through cryptographic hashes.</description>
+    </item>
     
     <item>
       <title>Star: Go but in Python?</title>

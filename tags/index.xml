@@ -51,9 +51,27 @@
     <item>
       <title>go</title>
       <link>https://maxmcd.com/tags/go/</link>
-      <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
       
       <guid>https://maxmcd.com/tags/go/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hermes</title>
+      <link>https://maxmcd.com/tags/hermes/</link>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/hermes/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>starlark</title>
+      <link>https://maxmcd.com/tags/starlark/</link>
+      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/starlark/</guid>
       <description></description>
     </item>
     
@@ -63,15 +81,6 @@
       <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
       
       <guid>https://maxmcd.com/tags/star/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>starlark</title>
-      <link>https://maxmcd.com/tags/starlark/</link>
-      <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
-      
-      <guid>https://maxmcd.com/tags/starlark/</guid>
       <description></description>
     </item>
     
