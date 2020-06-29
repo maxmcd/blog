@@ -22,15 +22,5 @@
 Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a simple nix Derivation you&amp;rsquo;ll see that these paths are hardcoded directly in the file.</description>
     </item>
     
-    <item>
-      <title>Let&#39;s make a Nix/Guix</title>
-      <link>https://maxmcd.com/posts/lets-make-a-nix-guix/</link>
-      <pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
-      
-      <guid>https://maxmcd.com/posts/lets-make-a-nix-guix/</guid>
-      <description>Nix (and the more recently created GNU Guix) are functional package managers. I&amp;rsquo;ve used NixOS for some time now and have thoroughly enjoyed using it. I was inspired by Andrew Chamber&amp;rsquo;s recently launched hermes to try implementing a simple version of Nix using Go and Starlark.
-A quick overview of Nix/Guix Nix and Guix are package managers that &amp;ldquo;utilize a purely functional deployment model where software is installed into unique directories generated through cryptographic hashes.</description>
-    </item>
-    
   </channel>
 </rss>

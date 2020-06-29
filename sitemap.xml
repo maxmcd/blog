@@ -44,22 +44,7 @@
   
   <url>
     <loc>https://maxmcd.com/tags/go/</loc>
-    <lastmod>2020-06-29T19:07:49-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://maxmcd.com/tags/hermes/</loc>
-    <lastmod>2020-06-29T19:07:49-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://maxmcd.com/posts/lets-make-a-nix-guix/</loc>
-    <lastmod>2020-06-29T19:07:49-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://maxmcd.com/tags/starlark/</loc>
-    <lastmod>2020-06-29T19:07:49-04:00</lastmod>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
   <url>
@@ -69,6 +54,11 @@
   
   <url>
     <loc>https://maxmcd.com/posts/star/</loc>
+    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/starlark/</loc>
     <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
