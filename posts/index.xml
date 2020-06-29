@@ -6,8 +6,49 @@
 		<generator>Hugo -- gohugo.io</generator>
 		<language>en-us</language>
 		<copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-		<lastBuildDate>Sat, 01 Feb 2020 22:32:00 +0000</lastBuildDate>
+		<lastBuildDate>Mon, 29 Jun 2020 01:29:25 +0000</lastBuildDate>
 		<atom:link href="https://maxmcd.com/posts/index.xml" rel="self" type="application/rss+xml" />
+		
+		<item>
+			<title>Strategies for Binary Relocation In Functional Build Systems</title>
+			<link>https://maxmcd.com/posts/strategies-for-binary-relocation/</link>
+			<pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
+			
+			<guid>https://maxmcd.com/posts/strategies-for-binary-relocation/</guid>
+			<description>I&amp;rsquo;m currently writing a toy Nix/Guix called Bramble to learn more about the inner workings of both systems. One of the features that I wanted to include in my version was &amp;ldquo;binary relocation&amp;rdquo;.
+Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a simple nix Derivation you&amp;rsquo;ll see that these paths are hardcoded directly in the file.</description>
+			<content type="html"><![CDATA[<p>I&rsquo;m currently writing a toy Nix/Guix called <a href="github.com/maxmcd/bramble">Bramble</a> to learn more about the inner workings of both systems. One of the features that I wanted to include in my version was &ldquo;binary relocation&rdquo;.</p>
+<p>Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a <a href="https://gist.github.com/maxmcd/d98710a0e26daaff37c565da599f5d76">simple nix Derivation</a> you&rsquo;ll see that these paths are hardcoded directly in the file. This is an important component of Nix. Instead of searching for the default shared libraries on a system nix-built binaries are patched to only include the specific libraries they depend on. This helps ensure correctness but also means that the binary must know exactly where to look for the shared lib. Hardcoding a library path to a fixed known location like <code>/nix/store/zqi5prhap0qh6r4nkghnibbmkgn7sczf-libogg-1.3.4/lib/</code> is an elegant way to get this done.</p>
+<p>So what is binary relocation? If Nix supported binary relocation it would support moving Nix artifacts to a new location, somewhere that is not <code>/nix/store</code>. Generally, nix doesn&rsquo;t support this. You can take advantage of <a href="https://github.com/NixOS/nix/issues/1971#issuecomment-372542326">workarounds</a> to fake it, but when nix is running it must think that <code>/nix/store</code> is the place to check for things.</p>
+<p>So why do we want binary relocation? My simple answer is that I want Bramble to not require root access. If we want a user to be able to put their store in <code>/home/human/store</code> we&rsquo;ll need some way to rewrite that path for different users. Outside of that it would also provide future flexibility in the face of issues <a href="https://github.com/NixOS/nix/issues/2925">like this one</a>.</p>
+<p>I&rsquo;ll outline the solutions to this problem that I&rsquo;ve been able to find, and then summarize what I&rsquo;m using for my system.</p>
+<h2 id="just-use-relative-paths">Just use relative paths</h2>
+<p>I was originally very optimistic about this idea. All build outputs would expect to run from within the bramble store and if they needed a library they would point to the relative path of the library they need. Patching the <a href="https://en.wikipedia.org/wiki/Rpath">rpath</a> of a binary with the $ORIGIN environment variable allows us to use this this strategy within executables.</p>
+<p>Seemed like all I needed to do from here was be careful with my build scripts and ensure there were tools to help others easily write relative paths into their builds.</p>
+<p>In practice I found this very difficult to do. This is apparently what Bazel does and there is some <a href="https://discourse.nixos.org/t/can-origin-be-used-to-make-nix-prebuilt-binaries-relocatable/2853/5">interesting discussion about this problem</a>.</p>
+<p>Bazel is very opinionated and comes pre-baked with tools to build various languages. If I was writing a tool like that then this might very well be the best way to go. However, Bramble is intended to be like Nix, where end users are expected to write build scripts, and I couldn&rsquo;t figure out a easy way to execute on this without complicating even the simplest builds.</p>
+<h2 id="just-re-patch-everything">Just re-patch everything</h2>
+<p>The <a href="https://github.com/spack/spack">spack</a> build tool support binary relocation: <a href="https://spack.readthedocs.io/en/latest/binary_caches.html#relocation">https://spack.readthedocs.io/en/latest/binary_caches.html#relocation</a></p>
+<p>You can read through the implementation <a href="https://github.com/spack/spack/blob/f5467957bca49ca612cfc32710ed2ca8a943583d/lib/spack/spack/relocate.py">here</a>. Spack just goes through and uses <code>pathelf</code> and <code>install_name_tool</code> to rewrite the applicable paths. This is interesting, and might work, but for the moment seems like it would miss various other paths within scripts or configuration. Spack mentions this:</p>
+<blockquote>
+<p>However, many packages compile paths into binary artifacts directly. In such cases, the build instructions of this package would need to be adjusted for better re-locatability.</p>
+</blockquote>
+<p>This might be worth exploring at a later date, maybe testing against various packages as they&rsquo;re build. For the moment it seems like a non-starter because of the difficulties of trivially replacing paths that are not in binaries.</p>
+<h2 id="pad-the-path">Pad the path</h2>
+<p>One interesting observation here <a href="https://github.com/NixOS/nix/issues/1971">https://github.com/NixOS/nix/issues/1971</a> what that <code>/nix/store/</code> and <code>/tmp/foo///</code> are both valid paths of the same length. If you could guarantee that your path was always shorter than a certain length you could just pad the location with slashes. Or, if the path is longer, you could store everything in a short path symlink the the longer path to that path.</p>
+<p>This is roughly the solution I ended up going with. Instead of using something like <code>/nix/store</code> I would assume the user can install their store within their home directory. The path would then be something like <code>/home/maxm/.bramble/store</code> or <code>/Users/maxm/.bramble/store/</code> for macOS. Now, instead of using &ldquo;store&rdquo; we rename that folder so that the length of the path is always the same. Here are some examples:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">/home/maxm/.bramble/soooooooooooooooooooooooooooo/
+/Users/maxm/.bramble/sooooooooooooooooooooooooooo/
+
+<span class="c1"># Linux/OpenBSD usernames can&#39;t be longer than 32 characters</span>
+/home/00000000001111111111000000000011/.bramble/s/
+<span class="c1"># Darwin/macOS has a limit of 20</span>
+/Users/00000000001111111111/.bramble/sooooooooooo/
+</code></pre></div><p>This way, the path length is always the same, so it&rsquo;s easy for us to find it within build outputs and patch it to be something else. Changing a users username or changing the store location will now mean all build outputs need to be patched, but there is at least a clear path to do so.</p>
+<h2 id="summary">Summary</h2>
+<p>I&rsquo;m going to try out this path padding thing. Part of the reason I wrote up this post is because this feels like a ridiculous direction to go down. What do you think? Are there ways to get binary relocation that I&rsquo;m missing? Should I spend more time on relative paths and re-patching? Are there pieces here I&rsquo;m not thinking about?</p>
+]]></content>
+		</item>
 		
 		<item>
 			<title>Star: Go but in Python?</title>
@@ -21,50 +62,50 @@ Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configu
 <p><a href="https://github.com/bazelbuild/starlark">Starlark</a> is Google&rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&rsquo;s not turing complete (no unbounded loops), it doesn&rsquo;t have classes or higher level abstractions, it&rsquo;s also deterministic and is somewhat safe to run untrusted user input.</p>
 <p>Although somewhat limited it felt like it might make a good candidate for a serverless function runtime that could be added to <a href="https://embly.run/">embly</a>. Easier to sandbox, could mock out pieces of the python standard library, maybe provide just enough functionality for it to be useful. I also thought you might be able to identify the deterministic blocks of code and replace them with the static result on subsequent runs. Potentially exciting stuff!</p>
 <p>I used <a href="https://github.com/google/starlark-go">starlark-go</a> to get started and pretty quickly had this demo up and running:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span><span class="p">:</span>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
     <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">content_type</span><span class="p">)</span>
     <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Hello World</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="p">]</span><span class="p">)</span> <span class="o">+</span> <span class="sa"></span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Hello World</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)])</span> <span class="o">+</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
 
     <span class="k">return</span>
 </code></pre></div><p>The server parses the file, starts a web server, takes the <code>hello</code> function and passes the <code>http.ResponseWriter</code> and <code>http.Request</code> over to the <strike>python</strike> starlark side of things on every http request. From there I could add attributes to pass over things like the <code>path</code> and <code>content_type</code>.</p>
 <p>Starlark doesn&rsquo;t have exception handling, so I add a Go error type and passed that over as well. This ends up being almost as verbose as Go, but without typed functions it does allow for a little more flexibility:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">handle_err</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="p">:</span>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">handle_err</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="sa"></span><span class="s2">&#34;</span><span class="s2">error</span><span class="s2">&#34;</span> <span class="ow">and</span> <span class="n">a</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">stacktrace</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&#34;error&#34;</span> <span class="ow">and</span> <span class="n">a</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">stacktrace</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">args</span>
 
-<span class="n">foo</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">handle_err</span><span class="p">(</span><span class="n">function_call</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+<span class="n">foo</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">handle_err</span><span class="p">(</span><span class="n">function_call</span><span class="p">())</span>
 </code></pre></div><p>At this point I got a little more interested in continuing to cram Go functionality into this scripting language. The <a href="https://github.com/google/starlark-go">starlark-go</a> implementation is really wonderful and it was quite easy to extend.</p>
 <p>In talking to my coworker I wondered if you could pull in lots of Go functionality, we sketched up something like this:</p>
 <div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">net</span> <span class="kn">import</span> <span class="n">http</span>
 <span class="kn">from</span> <span class="nn">star</span> <span class="kn">import</span> <span class="n">chan</span><span class="p">,</span> <span class="n">go</span>
 
-<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">hello</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s2">&#34;hello&#34;</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
 
     <span class="n">c</span> <span class="o">=</span> <span class="n">chan</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">go</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 </code></pre></div><p>From a syntax standpoint it seems like this would be possible. Starlark also has first-class support for running separate chunks of code in parallel (globals are immutable, which helps), so leveraging Go&rsquo;s concurrency model didn&rsquo;t seem too difficult either.</p>
 <p>After a little more messing around, most of that sketch has been implemented: <a href="https://github.com/embly/star">https://github.com/embly/star</a></p>
 <p><a href="https://github.com/embly/star"><strong>star</strong></a> is a python(ish) programming environment that lets you call Go library functions. It is very fragile and shouldn&rsquo;t be taken seriously, but it&rsquo;s very fun to play with.</p>
 <p>Here&rsquo;s what that sketch ended up looking like:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">net/http</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">ioutil</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">io/ioutil</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">sync</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">sync</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">star</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">star</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">time</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">time</span><span class="s2">&#34;</span><span class="p">)</span>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;net/http&#34;</span><span class="p">)</span>
+<span class="n">ioutil</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;io/ioutil&#34;</span><span class="p">)</span>
+<span class="n">sync</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;sync&#34;</span><span class="p">)</span>
+<span class="n">star</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;star&#34;</span><span class="p">)</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;time&#34;</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">get_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">)</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">get_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">):</span>
     <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
@@ -75,20 +116,20 @@ Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configu
     <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
     <span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Second</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">wg</span><span class="o">.</span><span class="n">Done</span><span class="p">(</span><span class="p">)</span>
+    <span class="n">wg</span><span class="o">.</span><span class="n">Done</span><span class="p">()</span>
 
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">wg</span> <span class="o">=</span> <span class="n">sync</span><span class="o">.</span><span class="n">WaitGroup</span><span class="p">(</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">wg</span> <span class="o">=</span> <span class="n">sync</span><span class="o">.</span><span class="n">WaitGroup</span><span class="p">()</span>
     <span class="n">wg</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
     <span class="p">]</span>
     <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
         <span class="n">star</span><span class="o">.</span><span class="n">go</span><span class="p">(</span><span class="n">get_url</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">)</span>
-    <span class="n">wg</span><span class="o">.</span><span class="n">Wait</span><span class="p">(</span><span class="p">)</span>
+    <span class="n">wg</span><span class="o">.</span><span class="n">Wait</span><span class="p">()</span>
 </code></pre></div><p>Really trippy to look at if you&rsquo;ve written python and Go. A few notes:</p>
 <ul>
 <li>starlark doesn&rsquo;t support python&rsquo;s import syntax, so I went with a <code>require</code> function</li>
@@ -97,15 +138,15 @@ Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configu
 </ul>
 <p>I&rsquo;ve only converted a small subset of the Go stdlib, you can see the list of available components here: <a href="https://github.com/embly/star/blob/master/src/packages.go">https://github.com/embly/star/blob/master/src/packages.go</a></p>
 <p>I also got a callback function working so that go/python servers work as well:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">net/http</span><span class="s2">&#34;</span><span class="p">)</span>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;net/http&#34;</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
     <span class="n">w</span><span class="o">.</span><span class="n">WriteHeader</span><span class="p">(</span><span class="mi">201</span><span class="p">)</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">hello world</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="s2">&#34;hello world</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
 
-<span class="n">http</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">/hello</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
+<span class="n">http</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="s2">&#34;/hello&#34;</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
 
-<span class="n">http</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">:8080</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">http</span><span class="o">.</span><span class="n">Handler</span><span class="p">)</span>
+<span class="n">http</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="s2">&#34;:8080&#34;</span><span class="p">,</span> <span class="n">http</span><span class="o">.</span><span class="n">Handler</span><span class="p">)</span>
 </code></pre></div><p>The coolest part is that this is all pure Go, so we can also run all of it in webassembly. Here&rsquo;s <a href="https://embly.github.io/star/">a repl</a>, script away:</p>
 <iframe id="repl" style="width: 100%; height: 400px;" frameborder=0 src="https://embly.github.io/star/"></iframe>
 <p>Or install with <code>go get github.com/embly/star/cmd/star</code></p>

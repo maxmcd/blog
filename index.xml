@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Sat, 01 Feb 2020 22:32:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 29 Jun 2020 01:29:25 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Strategies for Binary Relocation In Functional Build Systems</title>
+      <link>https://maxmcd.com/posts/strategies-for-binary-relocation/</link>
+      <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/posts/strategies-for-binary-relocation/</guid>
+      <description>I&amp;rsquo;m currently writing a toy Nix/Guix called Bramble to learn more about the inner workings of both systems. One of the features that I wanted to include in my version was &amp;ldquo;binary relocation&amp;rdquo;.
+Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a simple nix Derivation you&amp;rsquo;ll see that these paths are hardcoded directly in the file.</description>
+    </item>
     
     <item>
       <title>Star: Go but in Python?</title>
@@ -28,7 +38,7 @@ Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configu
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://maxmcd.com/about/</guid>
-      <description>hello</description>
+      <description>max.t.mcdonnell at gmail</description>
     </item>
     
   </channel>

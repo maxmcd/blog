@@ -7,10 +7,46 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Sat, 01 Feb 2020 22:32:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 29 Jun 2020 01:29:25 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.com/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>bazel</title>
+      <link>https://maxmcd.com/tags/bazel/</link>
+      <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/bazel/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>build</title>
+      <link>https://maxmcd.com/tags/build/</link>
+      <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/build/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>guix</title>
+      <link>https://maxmcd.com/tags/guix/</link>
+      <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/guix/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>nix</title>
+      <link>https://maxmcd.com/tags/nix/</link>
+      <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/nix/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>go</title>

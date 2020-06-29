@@ -31,7 +31,7 @@ Starlark is Google&rsquo;s custom subset of Python that it uses as a configurati
 <link rel="shortcut icon" href="/favicon.png">
 
 	<title>Star: Go but in Python?</title>
-	<link rel="stylesheet" href="https://maxmcd.com/css/style.min.910b9704cea0c749172da1e72127753c262da51abc985459955d79edd56fe144.css" integrity="sha256-kQuXBM6gx0kXLaHnISd1PCYtpRq8mFRZlV157dVv4UQ=" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxmcd.com/css/style.min.eac77496566fd7d5768fd650ddb0b2b181ca6a2d7c5fdd6fe6b8ba4bf47e566f.css" integrity="sha256-6sd0llZv19V2j9ZQ3bCysYHKai18X91v5ri6S/R+Vm8=" crossorigin="anonymous">
 	
 </head>
 
@@ -74,50 +74,50 @@ Starlark is Google&rsquo;s custom subset of Python that it uses as a configurati
 <p><a href="https://github.com/bazelbuild/starlark">Starlark</a> is Google&rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&rsquo;s not turing complete (no unbounded loops), it doesn&rsquo;t have classes or higher level abstractions, it&rsquo;s also deterministic and is somewhat safe to run untrusted user input.</p>
 <p>Although somewhat limited it felt like it might make a good candidate for a serverless function runtime that could be added to <a href="https://embly.run/">embly</a>. Easier to sandbox, could mock out pieces of the python standard library, maybe provide just enough functionality for it to be useful. I also thought you might be able to identify the deterministic blocks of code and replace them with the static result on subsequent runs. Potentially exciting stuff!</p>
 <p>I used <a href="https://github.com/google/starlark-go">starlark-go</a> to get started and pretty quickly had this demo up and running:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span><span class="p">:</span>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
     <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">content_type</span><span class="p">)</span>
     <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Hello World</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="p">]</span><span class="p">)</span> <span class="o">+</span> <span class="sa"></span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Hello World</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)])</span> <span class="o">+</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
 
     <span class="k">return</span>
 </code></pre></div><p>The server parses the file, starts a web server, takes the <code>hello</code> function and passes the <code>http.ResponseWriter</code> and <code>http.Request</code> over to the <strike>python</strike> starlark side of things on every http request. From there I could add attributes to pass over things like the <code>path</code> and <code>content_type</code>.</p>
 <p>Starlark doesn&rsquo;t have exception handling, so I add a Go error type and passed that over as well. This ends up being almost as verbose as Go, but without typed functions it does allow for a little more flexibility:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">handle_err</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="p">:</span>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">handle_err</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="sa"></span><span class="s2">&#34;</span><span class="s2">error</span><span class="s2">&#34;</span> <span class="ow">and</span> <span class="n">a</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">stacktrace</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&#34;error&#34;</span> <span class="ow">and</span> <span class="n">a</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">stacktrace</span><span class="p">())</span>
     <span class="k">return</span> <span class="n">args</span>
 
-<span class="n">foo</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">handle_err</span><span class="p">(</span><span class="n">function_call</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
+<span class="n">foo</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">handle_err</span><span class="p">(</span><span class="n">function_call</span><span class="p">())</span>
 </code></pre></div><p>At this point I got a little more interested in continuing to cram Go functionality into this scripting language. The <a href="https://github.com/google/starlark-go">starlark-go</a> implementation is really wonderful and it was quite easy to extend.</p>
 <p>In talking to my coworker I wondered if you could pull in lots of Go functionality, we sketched up something like this:</p>
 <div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">net</span> <span class="kn">import</span> <span class="n">http</span>
 <span class="kn">from</span> <span class="nn">star</span> <span class="kn">import</span> <span class="n">chan</span><span class="p">,</span> <span class="n">go</span>
 
-<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
     <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">hello</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s2">&#34;hello&#34;</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
 
     <span class="n">c</span> <span class="o">=</span> <span class="n">chan</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">go</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="p">)</span>
+    <span class="n">c</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
 </code></pre></div><p>From a syntax standpoint it seems like this would be possible. Starlark also has first-class support for running separate chunks of code in parallel (globals are immutable, which helps), so leveraging Go&rsquo;s concurrency model didn&rsquo;t seem too difficult either.</p>
 <p>After a little more messing around, most of that sketch has been implemented: <a href="https://github.com/embly/star">https://github.com/embly/star</a></p>
 <p><a href="https://github.com/embly/star"><strong>star</strong></a> is a python(ish) programming environment that lets you call Go library functions. It is very fragile and shouldn&rsquo;t be taken seriously, but it&rsquo;s very fun to play with.</p>
 <p>Here&rsquo;s what that sketch ended up looking like:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">net/http</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">ioutil</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">io/ioutil</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">sync</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">sync</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">star</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">star</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">time</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">time</span><span class="s2">&#34;</span><span class="p">)</span>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;net/http&#34;</span><span class="p">)</span>
+<span class="n">ioutil</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;io/ioutil&#34;</span><span class="p">)</span>
+<span class="n">sync</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;sync&#34;</span><span class="p">)</span>
+<span class="n">star</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;star&#34;</span><span class="p">)</span>
+<span class="n">time</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;time&#34;</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">get_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">)</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">get_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">):</span>
     <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
@@ -128,20 +128,20 @@ Starlark is Google&rsquo;s custom subset of Python that it uses as a configurati
     <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
         <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
     <span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Second</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">wg</span><span class="o">.</span><span class="n">Done</span><span class="p">(</span><span class="p">)</span>
+    <span class="n">wg</span><span class="o">.</span><span class="n">Done</span><span class="p">()</span>
 
 
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">wg</span> <span class="o">=</span> <span class="n">sync</span><span class="o">.</span><span class="n">WaitGroup</span><span class="p">(</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">wg</span> <span class="o">=</span> <span class="n">sync</span><span class="o">.</span><span class="n">WaitGroup</span><span class="p">()</span>
     <span class="n">wg</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
     <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
+        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
     <span class="p">]</span>
     <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
         <span class="n">star</span><span class="o">.</span><span class="n">go</span><span class="p">(</span><span class="n">get_url</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">)</span>
-    <span class="n">wg</span><span class="o">.</span><span class="n">Wait</span><span class="p">(</span><span class="p">)</span>
+    <span class="n">wg</span><span class="o">.</span><span class="n">Wait</span><span class="p">()</span>
 </code></pre></div><p>Really trippy to look at if you&rsquo;ve written python and Go. A few notes:</p>
 <ul>
 <li>starlark doesn&rsquo;t support python&rsquo;s import syntax, so I went with a <code>require</code> function</li>
@@ -150,15 +150,15 @@ Starlark is Google&rsquo;s custom subset of Python that it uses as a configurati
 </ul>
 <p>I&rsquo;ve only converted a small subset of the Go stdlib, you can see the list of available components here: <a href="https://github.com/embly/star/blob/master/src/packages.go">https://github.com/embly/star/blob/master/src/packages.go</a></p>
 <p>I also got a callback function working so that go/python servers work as well:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">net/http</span><span class="s2">&#34;</span><span class="p">)</span>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;net/http&#34;</span><span class="p">)</span>
 
-<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span><span class="p">:</span>
+<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
     <span class="n">w</span><span class="o">.</span><span class="n">WriteHeader</span><span class="p">(</span><span class="mi">201</span><span class="p">)</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">hello world</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+    <span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="s2">&#34;hello world</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
 
-<span class="n">http</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">/hello</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
+<span class="n">http</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="s2">&#34;/hello&#34;</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
 
-<span class="n">http</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">:8080</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">http</span><span class="o">.</span><span class="n">Handler</span><span class="p">)</span>
+<span class="n">http</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="s2">&#34;:8080&#34;</span><span class="p">,</span> <span class="n">http</span><span class="o">.</span><span class="n">Handler</span><span class="p">)</span>
 </code></pre></div><p>The coolest part is that this is all pure Go, so we can also run all of it in webassembly. Here&rsquo;s <a href="https://embly.github.io/star/">a repl</a>, script away:</p>
 <iframe id="repl" style="width: 100%; height: 400px;" frameborder=0 src="https://embly.github.io/star/"></iframe>
 <p>Or install with <code>go get github.com/embly/star/cmd/star</code></p>
@@ -176,11 +176,14 @@ Starlark is Google&rsquo;s custom subset of Python that it uses as a configurati
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://maxmcd.com/tags/star">star</a></span><span class="tag"><a href="https://maxmcd.com/tags/starlark">starlark</a></span><span class="tag"><a href="https://maxmcd.com/tags/go">go</a></span>
 				</p>
 				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>893 Words</p>
-				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-02-01 17:32 UTC</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2020-02-01 22:32 UTC</p>
 				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg><a href="https://github.com/maxmcd/blog/commit/c6bae80f1efcc5c7fafc5f6be01a5dbdcb698169" target="_blank" rel="noopener">c6bae80</a> @ 2020-06-19</p>
 			</footer>
 		</article>
 		<div class="post-nav thin">
+			<a class="next-post" href="https://maxmcd.com/posts/strategies-for-binary-relocation/">
+				<span class="post-nav-label">Newer&nbsp;<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg></span><br><span>Strategies for Binary Relocation In Functional Build Systems</span>
+			</a>
 		</div>
 		<div id="comments" class="thin">
 </div>

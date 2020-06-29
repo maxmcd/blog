@@ -3,17 +3,47 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://maxmcd.com/tags/go/</loc>
-    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
+    <loc>https://maxmcd.com/tags/bazel/</loc>
+    <lastmod>2020-06-29T19:16:26-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/build/</loc>
+    <lastmod>2020-06-29T19:16:26-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/guix/</loc>
+    <lastmod>2020-06-29T19:16:26-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.com/</loc>
-    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
+    <lastmod>2020-06-29T19:16:26-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/nix/</loc>
+    <lastmod>2020-06-29T19:16:26-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.com/posts/</loc>
+    <lastmod>2020-06-29T19:16:26-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/posts/strategies-for-binary-relocation/</loc>
+    <lastmod>2020-06-29T19:16:26-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/</loc>
+    <lastmod>2020-06-29T19:16:26-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/go/</loc>
     <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
@@ -29,11 +59,6 @@
   
   <url>
     <loc>https://maxmcd.com/tags/starlark/</loc>
-    <lastmod>2020-06-19T13:09:18-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://maxmcd.com/tags/</loc>
     <lastmod>2020-06-19T13:09:18-04:00</lastmod>
   </url>
   
