@@ -60,4 +60,4 @@ This way, the path length is always the same, so it's easy for us to find it wit
 
 ## Summary
 
-I'm going to try out this path padding thing. Part of the reason I wrote up this post is because this feels like a ridiculous direction to go down. What do you think? Are there ways to get binary relocation that I'm missing? Should I spend more time on relative paths and re-patching?
+I'm going to try out this path padding thing. Part of the reason I wrote up this post is because this feels like a ridiculous direction to go down. What do you think? Are there ways to get binary relocation that I'm missing? Should I spend more time on relative paths and re-patching? Are there pieces here I'm not thinking about?
