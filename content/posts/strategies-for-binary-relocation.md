@@ -34,6 +34,8 @@ Bazel is very opinionated and comes pre-baked with tools to build various langua
 
 ## Just re-patch everything
 
+**edit: I clearly didn't read enough about Spack's implementation. Spack's creator [posted a response to this post](https://lobste.rs/s/2lnncd/strategies_for_binary_relocation#c_btkgc0) with some very nice details.**
+
 The [spack](https://github.com/spack/spack) build tool support binary relocation: https://spack.readthedocs.io/en/latest/binary_caches.html#relocation
 
 You can read through the implementation [here](https://github.com/spack/spack/blob/f5467957bca49ca612cfc32710ed2ca8a943583d/lib/spack/spack/relocate.py). Spack just goes through and uses `pathelf` and `install_name_tool` to rewrite the applicable paths. This is interesting, and might work, but for the moment seems like it would miss various other paths within scripts or configuration. Spack mentions this:
