@@ -12,10 +12,10 @@ jobs:
       - name: Download Hugo
         run: |
           set -ex
-          wget --quiet https://github.com/gohugoio/hugo/releases/download/v0.72.0/hugo_0.72.0_Linux-64bit.tar.gz
-          tar xzf hugo_0.72.0_Linux-64bit.tar.gz
+          wget --quiet https://github.com/gohugoio/hugo/releases/download/v0.64.0/hugo_0.64.0_Linux-64bit.tar.gz
+          tar xzf hugo_0.64.0_Linux-64bit.tar.gz
           sudo mv ./hugo /usr/local/bin
-          rm hugo_0.72.0_Linux-64bit.tar.gz
+          rm hugo_0.64.0_Linux-64bit.tar.gz
       - name: Checkout and Deploy
         run: |
           set -ex
