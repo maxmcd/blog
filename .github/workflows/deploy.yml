@@ -24,7 +24,8 @@ jobs:
           git reset --hard "$GITHUB_SHA"
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          git submodule update --init --depth=1
+          git submodule update --init --recursive
+          cd themes/hermit && git status && git checkout master
       - name: Checkout and Deploy
         run: |
           set -ex
