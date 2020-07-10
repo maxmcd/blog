@@ -52,6 +52,69 @@ Both Nix and Guix have hardcoded store paths that are baked into all the outputs
 		</item>
 		
 		<item>
+			<title>Let&#39;s make a Nix/Guix</title>
+			<link>https://maxmcd.com/posts/lets-make-a-nix-guix/</link>
+			<pubDate>Fri, 19 Jun 2020 01:29:25 +0000</pubDate>
+			
+			<guid>https://maxmcd.com/posts/lets-make-a-nix-guix/</guid>
+			<description>Nix (and the more recently created GNU Guix) are functional package managers. I&amp;rsquo;ve used NixOS for some time now and have thoroughly enjoyed using it. I was inspired by Andrew Chamber&amp;rsquo;s recently launched hermes to try implementing a simple version of Nix using Go and Starlark.
+A quick overview of Nix/Guix Nix and Guix are package managers that &amp;ldquo;utilize a purely functional deployment model where software is installed into unique directories generated through cryptographic hashes.</description>
+			<content type="html"><![CDATA[<p><a href="https://nixos.org/">Nix</a> (and the more recently created <a href="https://guix.gnu.org/">GNU Guix</a>) are functional package managers. I&rsquo;ve used NixOS for some time now and have thoroughly enjoyed using it. I was inspired by Andrew Chamber&rsquo;s recently launched <a href="https://acha.ninja/blog/introducing_hermes/">hermes</a> to try implementing a simple version of Nix using Go and <a href="https://docs.bazel.build/versions/master/skylark/language.html">Starlark</a>.</p>
+<h2 id="a-quick-overview-of-nixguix">A quick overview of Nix/Guix</h2>
+<p>Nix and Guix are package managers that &ldquo;utilize a purely functional deployment model where software is installed into unique directories generated through cryptographic hashes.&quot;<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<p>Let&rsquo;s dig into that description with a quick example. We&rsquo;ll pretend we&rsquo;re trying to install two libraries &ldquo;Blue&rdquo; and &ldquo;Green&rdquo; that require ruby to run. On a normal system you might first install Blue which relies on ruby-2.6.5. You run <code>install Blue</code> and the package manager downloads ruby-2.6.5 for you along with your dependency. The dependency works and everyone is happy.</p>
+<p>Next you go to download Green and it fails with the following error:</p>
+<pre><code>Resolving dependencies...
+green requires ruby version &gt;= 2.0, &lt; 2.6, which is
+incompatible with the current version, ruby 2.6.5
+</code></pre><p>You realize that this software can&rsquo;t run with ruby 2.6.5 yet. You file a bug with the project, hope for a resolution one day and move on to thinking about downgrading ruby or using RVM to solve your problem.</p>
+<p>Nix has a solution to this issue. You run <code>nix-env -iA nixpkgs.blue</code> and <code>nix-env -iA nixpkgs.green</code> and it downloads the following assets (folders with hashes in their names):</p>
+<pre><code>12a7h4w68f96j56kzwxxpxbc4zq7n76p-ruby-2.6.5
+bqrxcg5a9hv5gb6527vmsay871fi22qv-blue-1.7.8
+mxaxvp33wg9sim8qh2kkw041v492bvxj-green-0.9.10
+94544v143cpp17s7kl6g9y39x2a09k51-ruby-2.5.7
+</code></pre><p>Two versions of ruby right on your system. When you run Blue it knows to use the ruby in folder 12a7h4w68f96j56kzwxxpxbc4zq7n76p-ruby-2.6.5 and when you run Green it uses 94544v143cpp17s7kl6g9y39x2a09k51-ruby-2.5.7. Essentially you solve the issue of <a href="https://en.wikipedia.org/wiki/Dependency_hell">dependency hell</a> at the cost of some additional disk space.</p>
+<p>Expanding from this basic idea, you can think about how this strategy is used throughout Nix. Every piece of software built with Nix outputs a hashed folder (or <a href="https://nixos.org/nixos/nix-pills/our-first-derivation.html#idm140737320470112">folders</a>). When a piece of software is run it uses the specific folders it relies on. If you want to build a new piece of software you point to certain hashed folders to build the dependency and other hashed folders to use as runtime dependencies.</p>
+<p>This allows users of Nix to ask some pretty wild things of its system:</p>
+<ol>
+<li>Delete all the dependencies I&rsquo;m not using</li>
+<li>Roll back my entire system to a previous set of dependencies</li>
+<li>Delete all the build dependencies I just downloaded but keep the dependencies my applications need</li>
+</ol>
+<p>Additionally, because inputs, outputs and the running environment are known, it&rsquo;s easy to build things in advance, cache them, and just let the user download the resulting build files. This is what happens when you run <code>nix-env -iA nixpkgs.ruby</code>, the Nix build script likely builds ruby from source with dozens of build-time dependencies, but as an end user I just need the build result.</p>
+<h2 id="lets-build-one">Let&rsquo;s build one</h2>
+<p>Each of these package managers use purely functional configuration languages to For each of use let&rsquo;s go  with starlark for the config language. Starlark is a subset of python and
+should hopefully be easy for others to learn.</p>
+<p>We&rsquo;ll need to figure out how to build the seed. The first executable that will start building other libraries. We&rsquo;ll need a libc
+and a compiler. glibc and clang</p>
+<p>TODO look at seeds for guix/nix/others</p>
+<p>Let&rsquo;s pick x and y.</p>
+<p>Now let&rsquo;s make our first build, we&rsquo;re going to have to decide a few things right off the bat.</p>
+<p>What does the scripting api look like
+What does the input hashing look like
+How do we make network calls and verify hashes</p>
+<p>Explain nix derivations, hermes input hashing</p>
+<p>(apologize for not knowing about guix)</p>
+<p>We should sandbox but we can skip it for now</p>
+<p><a href="https://nixos.org/nix/manual/#ssec-derivation">https://nixos.org/nix/manual/#ssec-derivation</a></p>
+<blockquote>
+<p>If the build was successful, Nix scans each output path for references to input paths by looking for the hash parts of the input paths. Since these are potential runtime dependencies, Nix registers them as dependencies of the output paths.</p>
+</blockquote>
+<p>Build the thing, scan all the output paths for sources, mark them in gc.</p>
+<p>Build a language from the seed</p>
+<p>Build a program for the language</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><a href="https://en.wikipedia.org/wiki/Nix_package_manager">https://en.wikipedia.org/wiki/Nix_package_manager</a> <a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+]]></content>
+		</item>
+		
+		<item>
 			<title>Star: Go but in Python?</title>
 			<link>https://maxmcd.com/posts/star/</link>
 			<pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
