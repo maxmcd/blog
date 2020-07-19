@@ -15,7 +15,7 @@ tags:
 
 [Nix](https://nixos.org/) (and the more recently created [GNU Guix](https://guix.gnu.org/)) are functional package managers. I've used NixOS for some time now and have thoroughly enjoyed using it. I was inspired by Andrew Chamber's recently launched [hermes](https://acha.ninja/blog/introducing_hermes/) to try implementing a simple version of Nix using Go and [Starlark](https://docs.bazel.build/versions/master/skylark/language.html).
 
-## A quick overview of Nix/Guix
+## A Quick Overview of Nix/Guix
 
 Nix and Guix are package managers that "utilize a purely functional deployment model where software is installed into unique directories generated through cryptographic hashes."[^1]
 
@@ -50,40 +50,54 @@ This allows users of Nix to ask some pretty wild things of its system:
 
 Additionally, because inputs, outputs and the running environment are known, it's easy to build things in advance, cache them, and just let the user download the resulting build files. This is what happens when you run `nix-env -iA nixpkgs.ruby`, the Nix build script likely builds ruby from source with dozens of build-time dependencies, but as an end user I just need the build result.
 
-## Let's build one
+## Let's Build One
 
-Each of these package managers use purely functional configuration languages to For each of use let's go  with starlark for the config language. Starlark is a subset of python and
-should hopefully be easy for others to learn.
+We'll need to decide on a handful of things as we proceed to build a Nix.
 
-We'll need to figure out how to build the seed. The first executable that will start building other libraries. We'll need a libc
-and a compiler. glibc and clang
+1. A configuration language. Nix uses a purpose-built programming language that is also called Nix. Guix uses Scheme.
+2. Once we have a language we'll need to figure out how build inputs are compute from these language files.
+3. And once we have build inputs we'll need to figure out how we're going to run our builds.
 
-TODO look at seeds for guix/nix/others
+From there we'll have many more small details to sort out, but those three things should get us to a pretty good position.
 
-Let's pick x and y.
+## Outline
 
-Now let's make our first build, we're going to have to decide a few things right off the bat.
-
-What does the scripting api look like
-What does the input hashing look like
-How do we make network calls and verify hashes
-
-Explain nix derivations, hermes input hashing
-
-(apologize for not knowing about guix)
-
-We should sandbox but we can skip it for now
+- intro
+- the language
+- derivations, what are they and how do we make one
+- language imports and pulling in requirements
+- building the derivation and build outputs
 
 
-https://nixos.org/nix/manual/#ssec-derivation
+## The Configuration Language
 
-> If the build was successful, Nix scans each output path for references to input paths by looking for the hash parts of the input paths. Since these are potential runtime dependencies, Nix registers them as dependencies of the output paths.
+Each of these package managers use purely functional configuration languages to describe the packages that they're building. Here is the Python requests package described in Guix and in Nix:
 
+Guix with the Scheme programming language
+```scheme
+(define-public python-requests-2.7
+  (package (inherit python-requests)
+    (version "2.7.0")
+    (source (origin
+             (method url-fetch)
+             (uri (pypi-uri "requests" version))
+             (sha256
+              (base32
+               "0gdr9dxm24amxpbyqpbh3lbwxc2i42hnqv50sigx568qssv3v2ir"))))))
+```
 
-Build the thing, scan all the output paths for sources, mark them in gc.
+Nix with the Nix programming language
+```nix
+buildPythonPackage rec {
+  pname = "requests";
+  version = "2.23.0";
 
-Build a language from the seed
+  src = fetchPypi {
+    inherit pname version;
+    sha256 = "1rhpg0jb08v0gd7f19jjiwlcdnxpmqi1fhvw7r4s9avddi4kvx5k";
+  };
 
-Build a program for the language
-
-[^1]: https://en.wikipedia.org/wiki/Nix_package_manager
+  nativeBuildInputs = [ pytest ];
+  propagatedBuildInputs = [ urllib3 idna chardet certifi ];
+}
+```
