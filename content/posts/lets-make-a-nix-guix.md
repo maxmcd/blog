@@ -101,3 +101,19 @@ buildPythonPackage rec {
   propagatedBuildInputs = [ urllib3 idna chardet certifi ];
 }
 ```
+
+I'd like to use [Starlark](https://docs.bazel.build/versions/master/skylark/language.html) as our build language. While Starlark is not purely functional I think it should have enough isolation to have the same effect. Starlark is not turing complete (no infinite loops) and globals are not mutable. Build files should execute deterministically and not be impacted by the execution of other code. Starlark is also a subset of python's syntax, which I think should aide user adoption and ease-of-use.
+
+Using Starlark, the build configuration for the python requests library might look something like this:
+
+
+```python
+name = "requests"
+version = "2.23.0"
+build_python_package(
+  name=name,
+  version=version,
+  src=fetch_pypi(name, version, "1rhpg0jb08v0gd7f19jjiwlcdnxpmqi1fhvw7r4s9avddi4kvx5k"),
+  dependencies=[urllib3, idna, chardet, certifi]
+)
+```
