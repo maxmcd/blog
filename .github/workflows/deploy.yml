@@ -1,0 +1,33 @@
+name: tests
+on:
+  push:
+    branches:
+      - master
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+    steps:
+      - name: Download Hugo
+        run: |
+          set -ex
+          wget --quiet https://github.com/gohugoio/hugo/releases/download/v0.64.0/hugo_extended_0.64.0_Linux-64bit.tar.gz
+          tar xzf hugo_extended_0.64.0_Linux-64bit.tar.gz
+          sudo mv ./hugo /usr/local/bin
+          rm hugo_extended_0.64.0_Linux-64bit.tar.gz
+      - name: Checkout and Deploy
+        run: |
+          set -ex
+          mkdir project && cd project
+          git clone --filter=blob:none https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git .
+          git reset --hard "$GITHUB_SHA"
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git submodule update --init --recursive
+          cd themes/hermit && git status && git checkout master
+      - name: Checkout and Deploy
+        run: |
+          set -ex
+          cd project
+          ./tools/deploy.sh

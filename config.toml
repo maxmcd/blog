@@ -1,7 +1,7 @@
-baseURL = "https://maxmcd.github.io/blog/"
+baseURL = "https://maxmcd.com"
 languageCode = "en-us"
 defaultContentLanguage = "en"
-title = ""
+title = "Max McDonnell"
 theme = "hermit"
 enableGitInfo = true
 pygmentsCodefences  = true
@@ -47,7 +47,7 @@ unsafe= true
   # bgImg = ""  # Homepage background-image URL
 
   # Prefix of link to the git commit detail page. GitInfo must be enabled.
-  # gitUrl = "https://github.com/username/repository/commit/"
+  gitUrl = "https://github.com/maxmcd/blog/commit/"
 
   # Toggling this option needs to rebuild SCSS, requires Hugo extended version
   justifyContent = false  # Set "text-align: justify" to `.content`.
