@@ -8,4 +8,4 @@ deploy: submodules
 	./tools/deploy.sh
 
 serve: submodules
-	hugo serve
+	hugo serve --bind 0.0.0.0 --baseURL "/" --appendPort=false
