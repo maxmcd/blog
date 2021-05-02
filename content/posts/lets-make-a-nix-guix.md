@@ -145,14 +145,14 @@ derivation(
     },
 )
 ```
-Here is a very basic derivation. The derivation has a **name** that we can use to reference it and an **environment** which are the environment variables available at build time. The **builder** command is usually an executable that we're going to use to build, but in this case it's a builtin builder called "fetch_url" that simply fetches (and optionally unarchives) urls.
+Here is a very basic derivation. The derivation has a **name** that we can use to reference it and an **environment** which are the environment variables available at build time. The **builder** command is usually an executable that we're going to use to build, but in this case it's a built-in builder called "fetch_url" that simply fetches (and optionally unarchives) urls.
 
 This is our first very basic derivation. The first thing we'll need to do is parse this starlark file and serialize our derivation. We'll [use a starlark function to define derivation](https://github.com/maxmcd/bramble/blob/e2a60085224f4f382aa2b2328001ba21ed75a90c/pkg/bramble/starlark.go#L145-L167). Once we parse it we [compute a hash for the filename](https://github.com/maxmcd/bramble/blob/e2a60085224f4f382aa2b2328001ba21ed75a90c/pkg/bramble/derivation.go#L109) and can view the resulting json:
 
 ```json
 {
   "Name": "busybox_download",
-  "Outputs": nil,
+  "Outputs": null,
   "Builder": "fetch_url",
   "Platform": "",
   "Args": null,
@@ -182,7 +182,7 @@ The next step is very important, we must take the output of the derivation and a
   },
 ```
 
-We don't include this section when we hash the file, but we make sure to add it after we're done building. This allows future runs to find the corresponding build output when looking for the contents of this derivation.
+We don't include this section when we hash the file, but we make sure to add it after we're done building. This allows future runs to find the corresponding build output when looking for the contents of this derivation. If we included the output in the has it would be impossible to compute and check for the derivation without building the entire thing.
 
 To review:
 
