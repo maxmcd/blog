@@ -13,7 +13,7 @@ tags:
 
 About a year and a half ago I decided to start working on a build system inspired by Nix called [Bramble](https://github.com/maxmcd/bramble). Andrew Chambers had launched [hermes](https://github.com/andrewchambers/hermes) and I was messing around with [starlark-go](https://github.com/google/starlark-go) a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.
 
-Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing. The project is still very rough around the edges. If you try using it it will likely break in some marvelous and unexpected ways. That said, the feature set has roughly stabilized, and I'm at least sure that the remaining pieces to fix are technically possible to accomplish, so it felt like a good time to start talking about it a little more.
+Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing. The project is still very rough around the edges. If you try using it it will likely break in some marvelous and unexpected ways. That said, the feature set has roughly stabilized, and I'm at least sure that the remaining pieces to fix are technically possible to implement, so it felt like a good time to start talking about it a little more.
 
 Bramble is complicated, and I tend to get bogged down in the details, so what follows will just be a handful of questions that I can imagine myself asking if I saw a project like this in the wild.
 
@@ -77,19 +77,19 @@ $ touch foo
 touch: cannot touch 'foo': Read-only file system
 ```
 
-Here bramble is building the necessary dependencies to run `bash`. Once that's done `bash` is run but with a read-only view of the project filesystem. Additionally the `bash` process doesn't have access to any files on the system outside of the Bramble project.
+Here bramble is building the necessary dependencies to run `bash`. Once that's done `bash` is run but with a read-only view of the project filesystem. The `bash` process is also sandboxed from the rest of the filesystem by default, and can only read files within the project.
 
 Once a project is set up you can also run a remote package and it will be added to the project as a dependency. Running `bramble run github.com/maxmcd/busybox:busybox ash` in a new project fetches the `github.com/maxmcd/busybox` from a remote cache, adds it as a dependency to `bramble.toml` and runs the `ash` executable in a sandbox.
 
 ## How is it different from Nix?
 
 - Starlark is used as a config language instead of the Nix language.
-- No network access in builds outside of the built-in fetchers. Networked builds will be supported, but they'll need to write incremental state to `bramble.lock` so that subsequent builds don't need network access.
 - Project-based, no central package tree.
 - No central daemon or root privileges needed to run.
 - Very limited build inputs. No env-var, arguments, or other inputs allowed for build configuration. Almost all configuration must be done in-code.
-- `/nix/store` is hardcoded in many Nix derivations, Bramble allows build outputs to be patched so that they can be relocated to stores at different locations.
-- Derivations are required to be reproducible with bramble, this assumption reduces the complexity of the build logic, but also means Bramble can be harder to work with.
+- No network access in builds outside of the built-in fetchers. Networked builds will be supported, but they'll need to write incremental state to `bramble.lock` so that subsequent builds don't need network access.
+- `/nix/store` is hardcoded in many Nix derivations, Bramble allows build outputs to be patched so that they can be relocated to stores at different locations. Computed hashes are also "store path agnostic" and hashes will match on different systems even if the store location is different.
+- Derivations are required to be reproducible. This assumption reduces the complexity of the build logic, but also means Bramble can be harder to work with.
 - Nix is mature software, Bramble is not.
 
 ## What's next?
