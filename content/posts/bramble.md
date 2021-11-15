@@ -77,7 +77,7 @@ $ touch foo
 touch: cannot touch 'foo': Read-only file system
 ```
 
-Here bramble is building the necessary dependencies to run `bash`. Once that's done `bash` is run but with a read-only view of the project filesystem. The `bash` process is also sandboxed from the rest of the filesystem by default, and can only read files within the project.
+Here Bramble is building the necessary dependencies to run `bash`. Once that's done `bash` is run but with a read-only view of the project filesystem. The `bash` process is also sandboxed from the rest of the filesystem by default, and can only read files within the project.
 
 Once a project is set up you can also run a remote package and it will be added to the project as a dependency. Running `bramble run github.com/maxmcd/busybox:busybox ash` in a new project fetches the `github.com/maxmcd/busybox` from a remote cache, adds it as a dependency to `bramble.toml` and runs the `ash` executable in a sandbox.
 
