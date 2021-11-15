@@ -3,7 +3,7 @@ title: "Bramble: A Purely Functional Build System and Package Manager"
 date: 2021-11-14T21:21:13
 draft: false
 toc: true
-images:
+images: ["https://github.com/maxmcd/bramble/raw/main/notes/animated.svg"]
 tags:
   - nix
   - starlark
