@@ -19,7 +19,7 @@
 Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.</description>
 			<content type="html"><![CDATA[<p><img src="https://github.com/maxmcd/bramble/raw/main/notes/animated.svg" alt=""></p>
 <p>About a year and a half ago I decided to start working on a build system inspired by Nix called <a href="https://github.com/maxmcd/bramble">Bramble</a>. Andrew Chambers had launched <a href="https://github.com/andrewchambers/hermes">hermes</a> and I was messing around with <a href="https://github.com/google/starlark-go">starlark-go</a> a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.</p>
-<p>Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing. The project is still very rough around the edges. If you try using it it will likely break in some marvelous and unexpected ways. That said, the feature set has roughly stabilized, and I&rsquo;m at least sure that the remaining pieces to fix are technically possible to accomplish, so it felt like a good time to start talking about it a little more.</p>
+<p>Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing. The project is still very rough around the edges. If you try using it it will likely break in some marvelous and unexpected ways. That said, the feature set has roughly stabilized, and I&rsquo;m at least sure that the remaining pieces to fix are technically possible to implement, so it felt like a good time to start talking about it a little more.</p>
 <p>Bramble is complicated, and I tend to get bogged down in the details, so what follows will just be a handful of questions that I can imagine myself asking if I saw a project like this in the wild.</p>
 <h2 id="what-is-it-in-a-few-sentences">What is it in a few sentences?</h2>
 <p>Bramble is a work-in-progress functional build system inspired by Nix. It intends to be a user-friendly, robust, and reliable way to build software. It is reproducible, rootless, daemonless, proactively-sandboxed, project-based, and extremely cacheable (more on all that <a href="https://github.com/maxmcd/bramble#readme">here</a>).</p>
@@ -63,17 +63,17 @@ bramble.toml bramble.lock  example.bramble
 
 $ touch foo
 touch: cannot touch 'foo': Read-only file system
-</code></pre><p>Here bramble is building the necessary dependencies to run <code>bash</code>. Once that&rsquo;s done <code>bash</code> is run but with a read-only view of the project filesystem. Additionally the <code>bash</code> process doesn&rsquo;t have access to any files on the system outside of the Bramble project.</p>
+</code></pre><p>Here bramble is building the necessary dependencies to run <code>bash</code>. Once that&rsquo;s done <code>bash</code> is run but with a read-only view of the project filesystem. The <code>bash</code> process is also sandboxed from the rest of the filesystem by default, and can only read files within the project.</p>
 <p>Once a project is set up you can also run a remote package and it will be added to the project as a dependency. Running <code>bramble run github.com/maxmcd/busybox:busybox ash</code> in a new project fetches the <code>github.com/maxmcd/busybox</code> from a remote cache, adds it as a dependency to <code>bramble.toml</code> and runs the <code>ash</code> executable in a sandbox.</p>
 <h2 id="how-is-it-different-from-nix">How is it different from Nix?</h2>
 <ul>
 <li>Starlark is used as a config language instead of the Nix language.</li>
-<li>No network access in builds outside of the built-in fetchers. Networked builds will be supported, but they&rsquo;ll need to write incremental state to <code>bramble.lock</code> so that subsequent builds don&rsquo;t need network access.</li>
 <li>Project-based, no central package tree.</li>
 <li>No central daemon or root privileges needed to run.</li>
 <li>Very limited build inputs. No env-var, arguments, or other inputs allowed for build configuration. Almost all configuration must be done in-code.</li>
-<li><code>/nix/store</code> is hardcoded in many Nix derivations, Bramble allows build outputs to be patched so that they can be relocated to stores at different locations.</li>
-<li>Derivations are required to be reproducible with bramble, this assumption reduces the complexity of the build logic, but also means Bramble can be harder to work with.</li>
+<li>No network access in builds outside of the built-in fetchers. Networked builds will be supported, but they&rsquo;ll need to write incremental state to <code>bramble.lock</code> so that subsequent builds don&rsquo;t need network access.</li>
+<li><code>/nix/store</code> is hardcoded in many Nix derivations, Bramble allows build outputs to be patched so that they can be relocated to stores at different locations. Computed hashes are also &ldquo;store path agnostic&rdquo; and hashes will match on different systems even if the store location is different.</li>
+<li>Derivations are required to be reproducible. This assumption reduces the complexity of the build logic, but also means Bramble can be harder to work with.</li>
 <li>Nix is mature software, Bramble is not.</li>
 </ul>
 <h2 id="whats-next">What&rsquo;s next?</h2>

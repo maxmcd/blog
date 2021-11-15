@@ -11,8 +11,8 @@
 <meta itemprop="description" content="About a year and a half ago I decided to start working on a build system inspired by Nix called Bramble. Andrew Chambers had launched hermes and I was messing around with starlark-go a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.
 Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.">
 <meta itemprop="datePublished" content="2021-11-14T21:21:13&#43;00:00" />
-<meta itemprop="dateModified" content="2021-11-14T23:25:00-05:00" />
-<meta itemprop="wordCount" content="792">
+<meta itemprop="dateModified" content="2021-11-14T23:37:43-05:00" />
+<meta itemprop="wordCount" content="815">
 
 
 
@@ -22,7 +22,7 @@ Bramble is no longer a test project, and has matured into something that I think
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://maxmcd.com/posts/bramble/" />
 <meta property="article:published_time" content="2021-11-14T21:21:13+00:00" />
-<meta property="article:modified_time" content="2021-11-14T23:25:00-05:00" />
+<meta property="article:modified_time" content="2021-11-14T23:37:43-05:00" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Bramble: A Purely Functional Build System and Package Manager"/>
 <meta name="twitter:description" content="About a year and a half ago I decided to start working on a build system inspired by Nix called Bramble. Andrew Chambers had launched hermes and I was messing around with starlark-go a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.
@@ -72,7 +72,7 @@ Bramble is no longer a test project, and has matured into something that I think
 			<div class="content">
 				<p><img src="https://github.com/maxmcd/bramble/raw/main/notes/animated.svg" alt=""></p>
 <p>About a year and a half ago I decided to start working on a build system inspired by Nix called <a href="https://github.com/maxmcd/bramble">Bramble</a>. Andrew Chambers had launched <a href="https://github.com/andrewchambers/hermes">hermes</a> and I was messing around with <a href="https://github.com/google/starlark-go">starlark-go</a> a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.</p>
-<p>Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing. The project is still very rough around the edges. If you try using it it will likely break in some marvelous and unexpected ways. That said, the feature set has roughly stabilized, and I&rsquo;m at least sure that the remaining pieces to fix are technically possible to accomplish, so it felt like a good time to start talking about it a little more.</p>
+<p>Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing. The project is still very rough around the edges. If you try using it it will likely break in some marvelous and unexpected ways. That said, the feature set has roughly stabilized, and I&rsquo;m at least sure that the remaining pieces to fix are technically possible to implement, so it felt like a good time to start talking about it a little more.</p>
 <p>Bramble is complicated, and I tend to get bogged down in the details, so what follows will just be a handful of questions that I can imagine myself asking if I saw a project like this in the wild.</p>
 <h2 id="what-is-it-in-a-few-sentences">What is it in a few sentences?<a href="#what-is-it-in-a-few-sentences" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
 <p>Bramble is a work-in-progress functional build system inspired by Nix. It intends to be a user-friendly, robust, and reliable way to build software. It is reproducible, rootless, daemonless, proactively-sandboxed, project-based, and extremely cacheable (more on all that <a href="https://github.com/maxmcd/bramble#readme">here</a>).</p>
@@ -116,17 +116,17 @@ bramble.toml bramble.lock  example.bramble
 
 $ touch foo
 touch: cannot touch 'foo': Read-only file system
-</code></pre><p>Here bramble is building the necessary dependencies to run <code>bash</code>. Once that&rsquo;s done <code>bash</code> is run but with a read-only view of the project filesystem. Additionally the <code>bash</code> process doesn&rsquo;t have access to any files on the system outside of the Bramble project.</p>
+</code></pre><p>Here bramble is building the necessary dependencies to run <code>bash</code>. Once that&rsquo;s done <code>bash</code> is run but with a read-only view of the project filesystem. The <code>bash</code> process is also sandboxed from the rest of the filesystem by default, and can only read files within the project.</p>
 <p>Once a project is set up you can also run a remote package and it will be added to the project as a dependency. Running <code>bramble run github.com/maxmcd/busybox:busybox ash</code> in a new project fetches the <code>github.com/maxmcd/busybox</code> from a remote cache, adds it as a dependency to <code>bramble.toml</code> and runs the <code>ash</code> executable in a sandbox.</p>
 <h2 id="how-is-it-different-from-nix">How is it different from Nix?<a href="#how-is-it-different-from-nix" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
 <ul>
 <li>Starlark is used as a config language instead of the Nix language.</li>
-<li>No network access in builds outside of the built-in fetchers. Networked builds will be supported, but they&rsquo;ll need to write incremental state to <code>bramble.lock</code> so that subsequent builds don&rsquo;t need network access.</li>
 <li>Project-based, no central package tree.</li>
 <li>No central daemon or root privileges needed to run.</li>
 <li>Very limited build inputs. No env-var, arguments, or other inputs allowed for build configuration. Almost all configuration must be done in-code.</li>
-<li><code>/nix/store</code> is hardcoded in many Nix derivations, Bramble allows build outputs to be patched so that they can be relocated to stores at different locations.</li>
-<li>Derivations are required to be reproducible with bramble, this assumption reduces the complexity of the build logic, but also means Bramble can be harder to work with.</li>
+<li>No network access in builds outside of the built-in fetchers. Networked builds will be supported, but they&rsquo;ll need to write incremental state to <code>bramble.lock</code> so that subsequent builds don&rsquo;t need network access.</li>
+<li><code>/nix/store</code> is hardcoded in many Nix derivations, Bramble allows build outputs to be patched so that they can be relocated to stores at different locations. Computed hashes are also &ldquo;store path agnostic&rdquo; and hashes will match on different systems even if the store location is different.</li>
+<li>Derivations are required to be reproducible. This assumption reduces the complexity of the build logic, but also means Bramble can be harder to work with.</li>
 <li>Nix is mature software, Bramble is not.</li>
 </ul>
 <h2 id="whats-next">What&rsquo;s next?<a href="#whats-next" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
@@ -147,9 +147,9 @@ touch: cannot touch 'foo': Read-only file system
 				<p>
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://maxmcd.com/tags/nix">nix</a></span><span class="tag"><a href="https://maxmcd.com/tags/starlark">starlark</a></span><span class="tag"><a href="https://maxmcd.com/tags/go">go</a></span>
 				</p>
-				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>792 Words</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>815 Words</p>
 				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2021-11-14 21:21 UTC</p>
-				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg><a href="https://github.com/maxmcd/blog/commit/dc9a3e1059744c37c7853606c89d5c8bcd795be2" target="_blank" rel="noopener">dc9a3e1</a> @ 2021-11-15</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg><a href="https://github.com/maxmcd/blog/commit/be52d6e8302b1b9104d1edfaeba690b0bc24e497" target="_blank" rel="noopener">be52d6e</a> @ 2021-11-15</p>
 			</footer>
 		</article>
 		<aside id="toc">
