@@ -7,7 +7,38 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Mon, 29 Jun 2020 01:29:25 +0000</lastBuildDate><atom:link href="https://maxmcd.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 14 Nov 2021 21:21:13 +0000</lastBuildDate>
+    
+	<atom:link href="https://maxmcd.com/tags/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>go</title>
+      <link>https://maxmcd.com/tags/go/</link>
+      <pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/go/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>nix</title>
+      <link>https://maxmcd.com/tags/nix/</link>
+      <pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/nix/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>starlark</title>
+      <link>https://maxmcd.com/tags/starlark/</link>
+      <pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/starlark/</guid>
+      <description></description>
+    </item>
+    
     <item>
       <title>bazel</title>
       <link>https://maxmcd.com/tags/bazel/</link>
@@ -36,38 +67,11 @@
     </item>
     
     <item>
-      <title>nix</title>
-      <link>https://maxmcd.com/tags/nix/</link>
-      <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
-      
-      <guid>https://maxmcd.com/tags/nix/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>go</title>
-      <link>https://maxmcd.com/tags/go/</link>
-      <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
-      
-      <guid>https://maxmcd.com/tags/go/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>star</title>
       <link>https://maxmcd.com/tags/star/</link>
       <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
       
       <guid>https://maxmcd.com/tags/star/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>starlark</title>
-      <link>https://maxmcd.com/tags/starlark/</link>
-      <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
-      
-      <guid>https://maxmcd.com/tags/starlark/</guid>
       <description></description>
     </item>
     

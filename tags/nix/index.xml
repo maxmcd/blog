@@ -7,7 +7,21 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Mon, 29 Jun 2020 01:29:25 +0000</lastBuildDate><atom:link href="https://maxmcd.com/tags/nix/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 14 Nov 2021 21:21:13 +0000</lastBuildDate>
+    
+	<atom:link href="https://maxmcd.com/tags/nix/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Bramble: A Purely Functional Build System and Package Manager</title>
+      <link>https://maxmcd.com/posts/bramble/</link>
+      <pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/posts/bramble/</guid>
+      <description>About a year and a half ago I decided to start working on a build system inspired by Nix called Bramble. Andrew Chambers had launched hermes and I was messing around with starlark-go a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.
+Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.</description>
+    </item>
+    
     <item>
       <title>Strategies for Binary Relocation In Functional Build Systems</title>
       <link>https://maxmcd.com/posts/strategies-for-binary-relocation/</link>
