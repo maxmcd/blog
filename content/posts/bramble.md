@@ -13,15 +13,15 @@ tags:
 
 About a year and a half ago I decided to start working on a build system inspired by Nix called [Bramble](https://github.com/maxmcd/bramble). Andrew Chambers had launched [hermes](https://github.com/andrewchambers/hermes) and I was messing around with [starlark-go](https://github.com/google/starlark-go) a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.
 
-Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing. The project is still very rough around the edges. If you try using it it will likely break in some marvelous and unexpected ways. That said, the feature set has roughly stabilized, and I'm at least sure that the remaining pieces to fix are technically possible to implement, so it felt like a good time to start talking about it a little more.
-
-Bramble is complicated, and I tend to get bogged down in the details, so what follows will just be a handful of questions that I can imagine myself asking if I saw a project like this in the wild.
+Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.
 
 ## What is it in a few sentences?
 
 Bramble is a work-in-progress functional build system inspired by Nix. It intends to be a user-friendly, robust, and reliable way to build software. It is reproducible, rootless, daemonless, proactively-sandboxed, project-based, and extremely cacheable (more on all that [here](https://github.com/maxmcd/bramble#readme)).
 
 Unlike traditional package managers Bramble does not intend to maintain a core set of packages. Similarly to Go, Bramble packages are just version control repositories. More `npm i` than `apt-get`.
+
+The project is still very rough around the edges. If you try using it it will likely break in some marvelous and unexpected ways.
 
 ## How do I use it?
 
