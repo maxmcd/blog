@@ -63,7 +63,7 @@ bramble.toml bramble.lock  example.bramble
 
 $ touch foo
 touch: cannot touch 'foo': Read-only file system
-</code></pre><p>Here bramble is building the necessary dependencies to run <code>bash</code>. Once that&rsquo;s done <code>bash</code> is run but with a read-only view of the project filesystem. The <code>bash</code> process is also sandboxed from the rest of the filesystem by default, and can only read files within the project.</p>
+</code></pre><p>Here Bramble is building the necessary dependencies to run <code>bash</code>. Once that&rsquo;s done <code>bash</code> is run but with a read-only view of the project filesystem. The <code>bash</code> process is also sandboxed from the rest of the filesystem by default, and can only read files within the project.</p>
 <p>Once a project is set up you can also run a remote package and it will be added to the project as a dependency. Running <code>bramble run github.com/maxmcd/busybox:busybox ash</code> in a new project fetches the <code>github.com/maxmcd/busybox</code> from a remote cache, adds it as a dependency to <code>bramble.toml</code> and runs the <code>ash</code> executable in a sandbox.</p>
 <h2 id="how-is-it-different-from-nix">How is it different from Nix?</h2>
 <ul>
