@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - val-town-golang
 jobs:
   deploy:
     runs-on: ubuntu-latest
