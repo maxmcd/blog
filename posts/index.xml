@@ -6,8 +6,252 @@
 		<generator>Hugo -- gohugo.io</generator>
 		<language>en-us</language>
 		<copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-		<lastBuildDate>Sun, 14 Nov 2021 21:21:13 +0000</lastBuildDate>
+		<lastBuildDate>Fri, 24 May 2024 06:21:13 +0000</lastBuildDate>
 		<atom:link href="https://maxmcd.com/posts/index.xml" rel="self" type="application/rss+xml" />
+		
+		<item>
+			<title>Running Go on Val Town</title>
+			<link>https://maxmcd.com/posts/running-go-on-val-town/</link>
+			<pubDate>Fri, 24 May 2024 06:21:13 +0000</pubDate>
+			
+			<guid>https://maxmcd.com/posts/running-go-on-val-town/</guid>
+			<description>Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?
+ If you want to skip all this and just run Go on Val Town you can follow the instructions here.</description>
+			<content type="html"><![CDATA[<p>Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on <a href="https://val.town">Val Town</a> and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?</p>
+<blockquote>
+<p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/crimsonMacaw">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p>
+</blockquote>
+<p>About a month ago I started working at Val Town. Before that I had spent many years writing Go and had always thought it would be quite poetic to get a Go HTTP handler running on Val Town. The real dream is to get the Go compiler and Language Server running in browser so that you could really have the dynamic feel of Val Town, but for now we&rsquo;re going to settle for &ldquo;Writing some Go code, compiling it, and having it handle an http request in Val Town&rdquo;.</p>
+<p>I thought it would be easy, and set out to find out:</p>
+<h2 id="setting-the-stage">Setting the stage</h2>
+<p>Val Town runs <a href="https://deno.com/">Deno</a>, so our goal for the moment is getting something running in Deno. We want to end up with something like this</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="nx">goWasmHandler</span> <span class="nx">from</span> <span class="s2">&#34;https://dreamland/maxmcd/nice/mod.ts&#34;</span>
+
+<span class="nx">Deno</span><span class="p">.</span><span class="nx">serve</span><span class="p">(</span><span class="p">{</span><span class="nx">port</span>: <span class="kt">8080</span><span class="p">}</span><span class="p">,</span> <span class="p">(</span><span class="nx">req</span>: <span class="kt">Request</span><span class="p">)</span><span class="o">:</span> <span class="nx">Promise</span><span class="o">&lt;</span><span class="nx">Response</span><span class="o">&gt;</span> <span class="o">=</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">goWasmHandler</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span>
+<span class="p">}</span><span class="p">)</span>
+</code></pre></div><p>Now, there are a few tutorials online about how to get Golang (or <a href="https://tinygo.org/">Tinygo</a>) WASM running in Deno. <a href="https://dev.to/taterbase/running-a-go-program-in-deno-via-wasm-2l08">As far</a> as I <a href="(https://github.com/philippgille/go-wasm)">could find</a>, these are mostly &ldquo;Hello World&rdquo; type things, or exporting and importing functions to just do some kind of work in Go. We want an HTTP request handler though so we&rsquo;re going to require a little more functionality.</p>
+<h2 id="wasi">WASI</h2>
+<p>Go added WASI support. Deno has a WASI library. That should work right?</p>
+<p>We write our Go program with reckless optimism. Let&rsquo;s see if we can make an http request.</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;net/http&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;https://www.maxmcd.com/&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div><p>Compile it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">GOOS</span><span class="o">=</span>wasip1 <span class="nv">GOARCH</span><span class="o">=</span>wasm  go build -o main.wasm ./main.go
+</code></pre></div><p>Write a Deno script to run it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="nx">Context</span> <span class="nx">from</span> <span class="s2">&#34;https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts&#34;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Context</span><span class="p">(</span><span class="p">{</span>
+  <span class="nx">args</span>: <span class="kt">Deno.args</span><span class="p">,</span>
+  <span class="nx">env</span><span class="o">:</span> <span class="p">{</span><span class="p">}</span><span class="p">,</span>
+<span class="p">}</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">binary</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">module</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="nx">binary</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">wasi_snapshot_preview1</span>: <span class="kt">context.exports</span><span class="p">,</span>
+<span class="p">}</span><span class="p">)</span><span class="p">;</span>
+
+<span class="nx">context</span><span class="p">.</span><span class="nx">start</span><span class="p">(</span><span class="nx">instance</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>Run the script!</p>
+<pre><code>$ deno run --allow-net --allow-read ./index.ts
+&lt;nil&gt; Get &quot;https://www.maxmcd.com/&quot;: dial tcp: lookup www.google.com on [::1]:53: dial udp [::1]:53: Connection refused
+</code></pre><p>Ah no :(</p>
+<p>Ok, so <code>fmt.Println</code> is working, which is nice, but we can&rsquo;t seem to make a DNS query for the host. It looks like <a href="https://github.com/denoland/deno_std/blob/b31795879301189559383d3e496c341d3f695201/wasi/snapshot_preview1.ts#L1696-L1722">the Deno wasi lib doesn&rsquo;t support socket calls yet</a> (and is very clear about this in the readme) so no luck!</p>
+<h2 id="syscalljs">syscall/js</h2>
+<p>Ok, so WASI won&rsquo;t work (and was maybe a little too low level for us anyway since we just need an http handler), so what about Go&rsquo;s old <a href="https://pkg.go.dev/syscall/js">syscall/js</a> WASM bindings? Intended for browsers and some <a href="https://dev.to/taterbase/running-a-go-program-in-deno-via-wasm-2l08">Deno tutorials use it</a>, so why not us?</p>
+<p>Oh, we even know that in syscall/js the Go http standard library <a href="https://github.com/golang/go/blob/07fc59199b9522bfe0d14f35c4391394efc336c9/src/net/http/roundtrip_js.go#L129">has a <code>fetch</code> wrapper</a> implemented to make http calls with <code>http.Get</code>, so maybe that will work!</p>
+<p>We&rsquo;ll copy <code>wasm_exec.js</code> from Go:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">cp <span class="s2">&#34;</span><span class="k">$(</span>go env GOROOT<span class="k">)</span><span class="s2">/misc/wasm/wasm_exec.js</span><span class="s2">&#34;</span> .
+</code></pre></div><p>For some reason I can&rsquo;t run this like I see others doing in tutorials with <code>import * as _ from &quot;./wasm_exec.js&quot;</code>. Deno seems to ignore the file entirely and then the <code>Go</code> class is not added to <code>globalThis</code>. So I <a href="https://github.com/maxmcd/go-town/blob/main/go-js/wasm_exec.js#L7">modified it</a> to have a contrived export value.</p>
+<p>Write our Deno script:</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="p">{</span> <span class="nx">go</span> <span class="kr">as</span> <span class="nx">g</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;./wasm_exec.js&#34;</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">g</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">go</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">window</span><span class="p">.</span><span class="nx">Go</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">buf</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFileSync</span><span class="p">(</span><span class="s2">&#34;./main.wasm&#34;</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">inst</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">buf</span><span class="p">,</span> <span class="nx">go</span><span class="p">.</span><span class="nx">importObject</span><span class="p">)</span><span class="p">;</span>
+<span class="nx">await</span> <span class="nx">go</span><span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="nx">inst</span><span class="p">.</span><span class="nx">instance</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>We&rsquo;ll use the same Go script as before, but this time we&rsquo;ll compile with <code>GOOS=js</code>:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">GOOS</span><span class="o">=</span>js <span class="nv">GOARCH</span><span class="o">=</span>wasm  go build -o main.wasm ./main.go
+</code></pre></div><p>Let&rsquo;s run it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ ./compile.sh <span class="o">&amp;&amp;</span> deno run --allow-net --allow-read ./index.ts
+<span class="p">&amp;</span><span class="o">{</span><span class="m">200</span> OK <span class="m">200</span>  <span class="m">0</span> <span class="m">0</span> map<span class="o">[</span>Access-Control-Allow-Origin:<span class="o">[</span>*<span class="o">]</span> Age:<span class="o">[</span>0<span class="o">]</span> Alt-Svc:<span class="o">[</span><span class="nv">h3</span><span class="o">=</span><span class="s2">&#34;:443&#34;</span><span class="p">;</span> <span class="nv">ma</span><span class="o">=</span>86400<span class="o">]</span> Cache-Control:<span class="o">[</span>max-age<span class="o">=</span>600<span class="o">]</span> Cf-Cache-Status:<span class="o">[</span>DYNAMIC<span class="o">]</span> Cf-Ray:<span class="o">[</span>882c9c85b89607ef-IAD<span class="o">]</span> Content-Type:<span class="o">[</span>text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8<span class="o">]</span> Date:<span class="o">[</span>Sun, <span class="m">12</span> May <span class="m">2024</span> 18:53:24 GMT<span class="o">]</span> Expires:<span class="o">[</span>Sun, <span class="m">12</span> May <span class="m">2024</span> 18:32:34 GMT<span class="o">]</span> Last-Modified:<span class="o">[</span>Thu, <span class="m">25</span> May <span class="m">2023</span> 01:50:43 GMT<span class="o">]</span> Nel:<span class="o">[</span><span class="o">{</span><span class="s2">&#34;success_fraction&#34;</span>:0,<span class="s2">&#34;report_to&#34;</span>:<span class="s2">&#34;cf-nel&#34;</span>,<span class="s2">&#34;max_age&#34;</span>:604800<span class="o">}</span><span class="o">]</span> Report-To:<span class="o">[</span><span class="o">{</span><span class="s2">&#34;endpoints&#34;</span>:<span class="o">[</span><span class="o">{</span><span class="s2">&#34;url&#34;</span>:<span class="s2">&#34;https:\/\/a.nel.cloudflare.com\/report\/v4?s=yTUiXIq4KveSdxOvi%2F2HhATI8MVyL%2BFESX6poW5BRilzSEVB%2Fvn3gMkDNuCvpCRmefSvVK8i%2FOAmWqqpu%2Bzo9MhqCQ4mjQNwnaFzvokAxXqCoJAVJ6CUrxTLjBlt&#34;</span><span class="o">}</span><span class="o">]</span>,<span class="s2">&#34;group&#34;</span>:<span class="s2">&#34;cf-nel&#34;</span>,<span class="s2">&#34;max_age&#34;</span>:604800<span class="o">}</span><span class="o">]</span> Server:<span class="o">[</span>cloudflare<span class="o">]</span> Vary:<span class="o">[</span>Accept-Encoding<span class="o">]</span> Via:<span class="o">[</span>1.1 varnish<span class="o">]</span> X-Cache:<span class="o">[</span>HIT<span class="o">]</span> X-Cache-Hits:<span class="o">[</span>0<span class="o">]</span> X-Fastly-Request-Id:<span class="o">[</span>54b300bdfa470e7a6ed26bae3c77efbbe5d54855<span class="o">]</span> X-Github-Request-Id:<span class="o">[</span>E256:4683B:1C05177:2274825:664108EA<span class="o">]</span> X-Proxy-Cache:<span class="o">[</span>MISS<span class="o">]</span> X-Served-By:<span class="o">[</span>cache-iad-kiad7000035-IAD<span class="o">]</span> X-Timer:<span class="o">[</span>S1715540005.768604,VS0,VE9<span class="o">]</span><span class="o">]</span> 0x14422c0 -1 <span class="o">[</span><span class="o">]</span> <span class="nb">false</span> <span class="nb">false</span> map<span class="o">[</span><span class="o">]</span> 0x1470000 &lt;nil&gt;<span class="o">}</span> &lt;nil&gt;
+</code></pre></div><p>Nice! Progress! The <code>fetch</code> wrapper works and we can make a request. Ok, fingers crossed, let&rsquo;s try an http server:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8080&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprint</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, World!&#34;</span><span class="p">)</span>
+	<span class="p">}</span><span class="p">)</span><span class="p">)</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div><p>Let&rsquo;s run it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ deno run --allow-net --allow-read ./index.ts
+error: Top-level await promise never resolved
+await go.run<span class="o">(</span>inst.instance<span class="o">)</span><span class="p">;</span>
+^
+    at &lt;anonymous&gt; <span class="o">(</span>file:///Users/maxm/go/src/github.com/maxmcd/go-town/go-js/index.ts:5:1<span class="o">)</span>
+</code></pre></div><p>Weird. We don&rsquo;t see a panic of another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported.</p>
+<p>At this point we&rsquo;re likely going to have to write the server logic ourselves. We have a <code>fetch</code> wrapper, but nothing to take a server request and ferry it over to the Go side. We&rsquo;ll have to build that. If this already exists please tell me, I could not find any kind of library that would handle sending <code>Request</code> or <code>Response</code> back and forth between Go+WASM and js/ts.</p>
+<p>From here I think we have two options:</p>
+<ol>
+<li>Continue with Go&rsquo;s syscall/js functionality. Write a library that makes javascript calls with syscall/js to handle requests for our server.</li>
+<li>Switch to Tinygo, get much smaller WASM binaries, leave the <code>fetch</code> wrapper behind :(, but do the work in a WASI context that we know will be supported into the future.</li>
+</ol>
+<p>For now, I went with option #2. That maybe seem a little unexpected, but now that we&rsquo;re going to implement the http stuff ourselves it feels easier to work with Tinygo and WASI than the syscall/js lib. Sometime in the near future I imagine I&rsquo;ll come crawling back to sycall/js for more robust functionality.</p>
+<h2 id="tinygo-and-wasi">Tinygo and WASI</h2>
+<p>Let&rsquo;s see if we can get a basic Tinygo WASM binary running in Deno.</p>
+<p>Here&rsquo;s our Go source:</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="c1">//export add
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">add</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="k">return</span> <span class="nx">a</span> <span class="o">+</span> <span class="nx">b</span>
+<span class="p">}</span>
+
+<span class="c1">// main is required for the `wasi` target, even if it isn&#39;t used.
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span><span class="p">}</span>
+</code></pre></div><p>And we&rsquo;re back using the WASI Deno lib again:</p>
+<div class="highlight"><pre class="chroma"><code class="language-tsx" data-lang="tsx"><span class="kr">import</span> <span class="nx">Context</span> <span class="nx">from</span> <span class="s2">&#34;https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts&#34;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Context</span><span class="p">(</span><span class="p">{</span>
+  <span class="nx">args</span>: <span class="kt">Deno.args</span><span class="p">,</span>
+  <span class="nx">env</span><span class="o">:</span> <span class="p">{</span><span class="p">}</span><span class="p">,</span>
+<span class="p">}</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">binary</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">module</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="nx">binary</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">wasi_snapshot_preview1</span>: <span class="kt">context.exports</span><span class="p">,</span>
+<span class="p">}</span><span class="p">)</span><span class="p">;</span>
+
+<span class="nx">context</span><span class="p">.</span><span class="nx">start</span><span class="p">(</span><span class="nx">instance</span><span class="p">)</span><span class="p">;</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">43</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>Let&rsquo;s compile our WASM binary and then run it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ tinygo build -o main.wasm -target<span class="o">=</span>wasi .
+$ wasm-strip ./main.wasm
+$ deno run --allow-read ./index.ts
+<span class="m">11</span>
+<span class="m">64</span>
+</code></pre></div><p>Nice, we can add numbers and everything works.</p>
+<p>Now the hard part. When a request comes in we want to serialize the request and pass it over to Go code, then deserialize it and turn it into an <code>*http.Request</code>. In our Go HTTP handler we want the user to write to an <code>http.ResponseWriter</code> and have that be passed back over to the JS side so that we can turn it into a <code>Response</code> object. For simplicity we&rsquo;ll skip things like streaming requests and responses and just send the full request over and wait for the full response.</p>
+<p>One of the trickier parts of this for me is getting the bytes sent between each environment. When sending bytes over to Go/WASM we&rsquo;ll need to:</p>
+<ol>
+<li>Allocate space in the shared WASM memory and write the bytes.</li>
+<li>Send the memory location over to the Go code.</li>
+<li>Read the bytes from memory and turn them into a Go byte array.</li>
+</ol>
+<p>On the way back we&rsquo;ll do the reverse:</p>
+<ol>
+<li>Take our Go byte array and get the memory location of the underlying bytes.</li>
+<li>Send the location over to Javascript.</li>
+<li>Read bytes from the shared WASM memory and be careful that the bytes are not garbage collected before we read them!</li>
+</ol>
+<p>I have implemented this pattern a few times and it is never easy going, so this time I found this <a href="https://github.com/bots-garden/wasi-tinygo-js">helpful go/js library</a> that implements helper functions to send strings and bytes between Nodejs and Tinygo.</p>
+<p>With that in place I&rsquo;ll have a <code>callHandlerWithJson</code> function that I can can call with a WebAssembly instance:</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kd">function</span> <span class="nx">callHandlerWithJson</span><span class="p">(</span><span class="nx">instance</span>: <span class="kt">WebAssembly.Instance</span><span class="p">,</span> <span class="nx">payload</span>: <span class="kt">any</span><span class="p">)</span>
+</code></pre></div><p>On the Go side, I can call this function to register a handler that will accept the JSON bytes. We&rsquo;ll read the bytes, process the request and then return the JSON bytes of our response.</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="nf">setHandler</span><span class="p">(</span><span class="nx">function</span> <span class="kd">func</span><span class="p">(</span><span class="nx">param</span> <span class="p">[</span><span class="p">]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="kt">byte</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span><span class="p">)</span>
+</code></pre></div><h2 id="draw-the-rest-of-the-owl">Draw the rest of the owl</h2>
+<p>We&rsquo;re nearing our conclusion. Using the building blocks outlined above we can do everything we need. Let&rsquo;s depart from story mode and I&rsquo;ll show you how it all works.</p>
+<p>First, define your HTTP handler in Go. To do that you&rsquo;ll use a Go library I made called <a href="https://github.com/maxmcd/go-town/"><code>go-town</code></a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;net/http&#34;</span>
+
+	<span class="nx">gotown</span> <span class="s">&#34;github.com/maxmcd/go-town&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">gotown</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello from Deno and Tinygo 🤝&#34;</span><span class="p">)</span>
+	<span class="p">}</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div><p>Compile it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">tinygo build -o main.wasm -target<span class="o">=</span>wasi
+wasm-strip ./main.wasm
+</code></pre></div><p>Now let&rsquo;s run it in Deno. I made a library in Val Town that takes a WASM binary and returns an HTTP handler:</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="p">{</span> <span class="nx">wasmHandler</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;https://esm.town/v/maxm/tinygoHttp&#34;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">handler</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">wasmHandler</span><span class="p">(</span><span class="nx">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
+<span class="nx">Deno</span><span class="p">.</span><span class="nx">serve</span><span class="p">(</span><span class="p">{</span> <span class="nx">port</span>: <span class="kt">8080</span> <span class="p">}</span><span class="p">,</span> <span class="nx">async</span> <span class="p">(</span><span class="nx">req</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="nx">handler</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span><span class="p">;</span>
+<span class="p">}</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>Now we run it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">deno run --allow-env --allow-read --allow-net ./index.ts
+
+<span class="c1"># in a separate terminal</span>
+$ curl localhost:8080
+Hello from Deno and Tinygo 🤝
+</code></pre></div><p>Nice!</p>
+<p>Here&rsquo;s the full sequence of events:</p>
+<ol>
+<li>When a request comes in we turn the <code>Request</code> object into JSON and <a href="https://www.val.town/v/maxm/tinygoHttp?v=22#L94-99">send it over to the WebAssembly binary</a>.</li>
+<li>We <a href="https://github.com/maxmcd/go-town/blob/4b9de71a8d427c2e19d0d56f025184b31f9f25b7/gotown.go#L101-L105">turn the JSON into an <code>*http.Request</code></a> and pass it to our <code>gotown.ListenAndServe</code> handler.</li>
+<li>We use our <code>http.ResponseWriter</code> to <a href="https://github.com/maxmcd/go-town/blob/4b9de71a8d427c2e19d0d56f025184b31f9f25b7/gotown.go#L82-L96">collect the response</a> and then <a href="https://github.com/maxmcd/go-town/blob/4b9de71a8d427c2e19d0d56f025184b31f9f25b7/gotown.go#L106-L110">return it back to JS land</a>.</li>
+<li>Finally, we <a href="https://www.val.town/v/maxm/tinygoHttp?v=22#L103-107">turn the JSON into a <code>Response</code> object</a> and return it.</li>
+</ol>
+<p>There we go. We did it.</p>
+<h2 id="but-what-about-val-town">But what about Val town?</h2>
+<p>Now that we have everything working we can wrap things up to work in Val Town in the most clever of ways.</p>
+<p>We&rsquo;re going to run things in Val Town with the help of three different Vals.</p>
+<ol>
+<li>
+<p>First, we&rsquo;ll make a script in Val Town that we can run with <code>deno run</code>: <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">https://www.val.town/v/maxm/compileAndUploadTinygoWasm</a>. This is a bit of an atypical use, but we&rsquo;ll write our script as a Val and then copy the module url (<a href="https://esm.town/v/maxm/compileAndUploadTinygoWasm">https://esm.town/v/maxm/compileAndUploadTinygoWasm</a>) to run it from Deno. You can run many differnent Vals in Deno this way and it opens up some cool use cases.</p>
+</li>
+<li>
+<p>Second, we&rsquo;ll create an <a href="https://www.val.town/v/maxm/wasmBlobHost">HTTP Val</a> to use as a <a href="https://maxm-wasmblobhost.web.val.run/">general purpose WASM binary host</a>. Val Town doesn&rsquo;t allow you to upload files for Vals, but we can make our own and store the WASM binaries in <a href="https://www.val.town/v/std/blob">blob storage</a>.</p>
+</li>
+<li>
+<p>Third, we&rsquo;ll continue to use the script Val from the previous section as a library to handle all the WASM&lt;&gt;JS communication: <a href="https://www.val.town/v/maxm/tinygoHttp">https://www.val.town/v/maxm/tinygoHttp</a></p>
+</li>
+</ol>
+<p>Here&rsquo;s all those pieces working together:</p>
+<p>We&rsquo;ll start with a slightly modified version of our Go HTTP service.</p>
+<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="p">(</span>
+	<span class="s">&#34;fmt&#34;</span>
+	<span class="s">&#34;net/http&#34;</span>
+
+	<span class="nx">gotown</span> <span class="s">&#34;github.com/maxmcd/go-town&#34;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
+	<span class="nx">gotown</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello from Val Town and Tinygo 🤝&#34;</span><span class="p">)</span>
+	<span class="p">}</span><span class="p">)</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div><p>And now we run our script to compile and upload it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">$ deno run --allow-net --allow-run --allow-read \
+    &#34;https://esm.town/v/maxm/compileAndUploadTinygoWasm?v=58&#34;
+Compliation complete
+Running wasm-strip main.wasm
+
+Copy the following into a Val Town HTTP Val:
+
+import { wasmHandler } from &#34;https://esm.town/v/maxm/tinygoHttp&#34;;
+const resp = await fetch(&#34;https://maxm-wasmblobhost.web.val.run/e5vpzt253pv5jxqfmygo7nytl5uvyn5c.wasm&#34;);
+const handler = await wasmHandler(new Uint8Array(await resp.arrayBuffer()));
+export default async function(req: Request): Promise&lt;Response&gt; {
+  return handler(req);
+}
+</code></pre></div><p>You can see the WASM binary uploaded here: <a href="https://maxm-wasmblobhost.web.val.run/">https://maxm-wasmblobhost.web.val.run/</a></p>
+<p>I pasted the resulting code into an HTTP Val. You can see everything working here: <a href="https://www.val.town/v/maxm/aquamarinePiranha">https://www.val.town/v/maxm/aquamarinePiranha</a></p>
+<h2 id="conclusion">Conclusion</h2>
+<p>This is all a bit of silliness. Quite inefficient. Not super useful. But, it was quite a bit of fun to play around with all this stuff. I hope one day I can make a little Go playground where you can write Go with a language server and compile and run HTTP handlers from the browser. That would be cool, and fun (still not very useful), and this is a step in that direction :)</p>
+]]></content>
+		</item>
 		
 		<item>
 			<title>Bramble: A Purely Functional Build System and Package Manager</title>

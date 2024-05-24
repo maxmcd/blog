@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Sun, 14 Nov 2021 21:21:13 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 24 May 2024 06:21:13 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.com/tags/go/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Running Go on Val Town</title>
+      <link>https://maxmcd.com/posts/running-go-on-val-town/</link>
+      <pubDate>Fri, 24 May 2024 06:21:13 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/posts/running-go-on-val-town/</guid>
+      <description>Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?
+ If you want to skip all this and just run Go on Val Town you can follow the instructions here.</description>
+    </item>
     
     <item>
       <title>Bramble: A Purely Functional Build System and Package Manager</title>
