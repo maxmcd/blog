@@ -1,7 +1,7 @@
 ---
 title: "Running Go on Val Town"
-date: 2024-05-11T21:21:13
-draft: true
+date: 2024-05-24T06:21:13
+draft: false
 toc: true
 images: []
 tags:
