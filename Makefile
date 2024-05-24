@@ -8,4 +8,4 @@ deploy: submodules
 	./tools/deploy.sh
 
 serve: submodules
-	hugo serve --bind 0.0.0.0
+	hugo serve --disableFastRender --noHTTPCache --ignoreCache --disableFastRender --bind 0.0.0.0
