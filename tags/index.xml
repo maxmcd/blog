@@ -7,15 +7,24 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Fri, 24 May 2024 06:21:13 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 29 May 2024 06:21:13 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.com/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>deno</title>
+      <link>https://maxmcd.com/tags/deno/</link>
+      <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/deno/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>go</title>
       <link>https://maxmcd.com/tags/go/</link>
-      <pubDate>Fri, 24 May 2024 06:21:13 +0000</pubDate>
+      <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
       
       <guid>https://maxmcd.com/tags/go/</guid>
       <description></description>
@@ -24,7 +33,7 @@
     <item>
       <title>val.town</title>
       <link>https://maxmcd.com/tags/val.town/</link>
-      <pubDate>Fri, 24 May 2024 06:21:13 +0000</pubDate>
+      <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
       
       <guid>https://maxmcd.com/tags/val.town/</guid>
       <description></description>
@@ -33,7 +42,7 @@
     <item>
       <title>wasm</title>
       <link>https://maxmcd.com/tags/wasm/</link>
-      <pubDate>Fri, 24 May 2024 06:21:13 +0000</pubDate>
+      <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
       
       <guid>https://maxmcd.com/tags/wasm/</guid>
       <description></description>

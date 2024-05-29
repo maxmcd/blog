@@ -6,18 +6,19 @@
 		<generator>Hugo -- gohugo.io</generator>
 		<language>en-us</language>
 		<copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-		<lastBuildDate>Fri, 24 May 2024 06:21:13 +0000</lastBuildDate>
+		<lastBuildDate>Wed, 29 May 2024 06:21:13 +0000</lastBuildDate>
 		<atom:link href="https://maxmcd.com/posts/index.xml" rel="self" type="application/rss+xml" />
 		
 		<item>
 			<title>Running Go on Val Town</title>
 			<link>https://maxmcd.com/posts/running-go-on-val-town/</link>
-			<pubDate>Fri, 24 May 2024 06:21:13 +0000</pubDate>
+			<pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
 			
 			<guid>https://maxmcd.com/posts/running-go-on-val-town/</guid>
 			<description>Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?
  If you want to skip all this and just run Go on Val Town you can follow the instructions here.</description>
-			<content type="html"><![CDATA[<p>Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on <a href="https://val.town">Val Town</a> and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?</p>
+			<content type="html"><![CDATA[<p><img src="https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public" alt="image.png"></p>
+<p>Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on <a href="https://val.town">Val Town</a> and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?</p>
 <blockquote>
 <p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/tinygoWasmHelloWorld">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p>
 </blockquote>

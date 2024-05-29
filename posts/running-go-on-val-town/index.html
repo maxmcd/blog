@@ -10,20 +10,24 @@
 <meta itemprop="name" content="Running Go on Val Town">
 <meta itemprop="description" content="Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?
  If you want to skip all this and just run Go on Val Town you can follow the instructions here.">
-<meta itemprop="datePublished" content="2024-05-24T06:21:13&#43;00:00" />
-<meta itemprop="dateModified" content="2024-05-29T12:27:21-04:00" />
+<meta itemprop="datePublished" content="2024-05-29T06:21:13&#43;00:00" />
+<meta itemprop="dateModified" content="2024-05-29T12:29:31-04:00" />
 <meta itemprop="wordCount" content="2038">
+<meta itemprop="image" content="https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public">
 
 
 
-<meta itemprop="keywords" content="val.town,go,wasm," /><meta property="og:title" content="Running Go on Val Town" />
+<meta itemprop="keywords" content="val.town,go,deno,wasm," /><meta property="og:title" content="Running Go on Val Town" />
 <meta property="og:description" content="Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?
  If you want to skip all this and just run Go on Val Town you can follow the instructions here." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://maxmcd.com/posts/running-go-on-val-town/" />
-<meta property="article:published_time" content="2024-05-24T06:21:13+00:00" />
-<meta property="article:modified_time" content="2024-05-29T12:27:21-04:00" />
-<meta name="twitter:card" content="summary"/>
+<meta property="og:image" content="https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public" />
+<meta property="article:published_time" content="2024-05-29T06:21:13+00:00" />
+<meta property="article:modified_time" content="2024-05-29T12:29:31-04:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public"/>
+
 <meta name="twitter:title" content="Running Go on Val Town"/>
 <meta name="twitter:description" content="Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?
  If you want to skip all this and just run Go on Val Town you can follow the instructions here."/>
@@ -32,7 +36,7 @@
 
 	<title>Running Go on Val Town</title>
 	<link rel="stylesheet" href="https://maxmcd.com/css/style.min.c3c1dc47350d651aa2786a8532ff063ffc88db7365580e26ea1bb752c9a8a2b8.css" integrity="sha256-w8HcRzUNZRqieGqFMv8GP/yI23NlWA4m6hu3Usmoorg=" crossorigin="anonymous">
-	<script defer data-domain="maxmcd.com" src="https://plausible.io/js/plausible.js"></script>
+	<style>.bg-img {background-image: url('https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public');}</style><script defer data-domain="maxmcd.com" src="https://plausible.io/js/plausible.js"></script>
 
 </head>
 
@@ -52,7 +56,7 @@
 				</nav>
 			</div>
 			<div class="hdr-right hdr-icons">
-				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/mxmcd" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/maxmcd" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a></span><button id="menu-btn" class="hdr-btn" title="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+				<button id="img-btn" class="hdr-btn" title="Featured Image"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-image"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></button><span class="hdr-social hide-in-mobile"><a href="https://twitter.com/mxmcd" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/maxmcd" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a></span><button id="menu-btn" class="hdr-btn" title="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
 			</div>
 		</div>
 	</header>
@@ -64,14 +68,16 @@
 	</div>
 
 
+	<div class="bg-img"></div>
 	<main class="site-main section-inner animated fadeIn faster">
 		<article class="thin">
 			<header class="post-header">
-				<div class="post-meta"><span>May 24, 2024</span> - </div>
+				<div class="post-meta"><span>May 29, 2024</span> - </div>
 				<h1>Running Go on Val Town</h1>
 			</header>
 			<div class="content">
-				<p>Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on <a href="https://val.town">Val Town</a> and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?</p>
+				<p><img src="https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public" alt="image.png"></p>
+<p>Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on <a href="https://val.town">Val Town</a> and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?</p>
 <blockquote>
 <p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/tinygoWasmHelloWorld">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p>
 </blockquote>
@@ -311,11 +317,11 @@ export default async function(req: Request): Promise&lt;Response&gt; {
 			<footer class="post-info">
 				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>Max McDonnell</p>
 				<p>
-					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://maxmcd.com/tags/val.town">val.town</a></span><span class="tag"><a href="https://maxmcd.com/tags/go">go</a></span><span class="tag"><a href="https://maxmcd.com/tags/wasm">wasm</a></span>
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://maxmcd.com/tags/val.town">val.town</a></span><span class="tag"><a href="https://maxmcd.com/tags/go">go</a></span><span class="tag"><a href="https://maxmcd.com/tags/deno">deno</a></span><span class="tag"><a href="https://maxmcd.com/tags/wasm">wasm</a></span>
 				</p>
 				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>2038 Words</p>
-				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2024-05-24 06:21 UTC</p>
-				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg><a href="https://github.com/maxmcd/blog/commit/d80a7f522914a07232ca94ebb4344e53f2365324" target="_blank" rel="noopener">d80a7f5</a> @ 2024-05-29</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2024-05-29 06:21 UTC</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg><a href="https://github.com/maxmcd/blog/commit/d8cd6c66e9b8208459ecffb54bec0036c45ffe71" target="_blank" rel="noopener">d8cd6c6</a> @ 2024-05-29</p>
 			</footer>
 		</article>
 		<aside id="toc">
