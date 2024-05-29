@@ -1,14 +1,18 @@
 ---
 title: "Running Go on Val Town"
-date: 2024-05-24T06:21:13
+date: 2024-05-29T06:21:13
 draft: false
 toc: true
-images: []
+images: [https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public]
 tags:
   - val.town
   - go
+  - deno
   - wasm
 ---
+
+![image.png](https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public)
+
 Let's go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on [Val Town](https://val.town) and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn't support Go, but it supports WASM. Can we make it all work!?
 
 > If you want to skip all this and just run Go on Val Town you can [follow the instructions here](https://www.val.town/v/maxm/compileAndUploadTinygoWasm). There's also a [basic "Hello World"](https://www.val.town/v/maxm/tinygoWasmHelloWorld) example, and another that's [much more fun and complex](https://www.val.town/v/maxm/tinygoHttpExample).
