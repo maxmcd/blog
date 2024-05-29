@@ -11,9 +11,9 @@ tags:
 ---
 Let's go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on [Val Town](https://val.town) and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn't support Go, but it supports WASM. Can we make it all work!?
 
-> If you want to skip all this and just run Go on Val Town you can [follow the instructions here](https://www.val.town/v/maxm/compileAndUploadTinygoWasm). There's also a [basic "Hello World"](https://www.val.town/v/maxm/crimsonMacaw) example, and another that's [much more fun and complex](https://www.val.town/v/maxm/tinygoHttpExample).
+> If you want to skip all this and just run Go on Val Town you can [follow the instructions here](https://www.val.town/v/maxm/compileAndUploadTinygoWasm). There's also a [basic "Hello World"](https://www.val.town/v/maxm/tinygoWasmHelloWorld) example, and another that's [much more fun and complex](https://www.val.town/v/maxm/tinygoHttpExample).
 
-About a month ago I started working at Val Town. Before that I had spent many years writing Go and had always thought it would be quite poetic to get a Go HTTP handler running on Val Town. The real dream is to get the Go compiler and Language Server running in browser so that you could really have the dynamic feel of Val Town, but for now we're going to settle for "Writing some Go code, compiling it, and having it handle an http request in Val Town".
+About two months ago I started working at Val Town. Before that I had spent many years writing Go and had always thought it would be quite poetic to get a Go HTTP handler running on Val Town. The real dream is to get the Go compiler and Language Server running in browser so that you could really have the dynamic feel of Val Town, but for now we're going to settle for "Writing some Go code, compile it, and having it handle an http request in Val Town".
 
 I thought it would be easy, and set out to find out:
 
@@ -33,7 +33,7 @@ Now, there are a few tutorials online about how to get Golang (or [Tinygo](https
 
 ## WASI
 
-Go added WASI support. Deno has a WASI library. That should work right?
+Go [added WASI support](https://go.dev/blog/wasi). Deno has [a WASI library](https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts). That should work right?
 
 We write our Go program with reckless optimism. Let's see if we can make an http request.
 
@@ -138,14 +138,14 @@ await go.run(inst.instance);
     at <anonymous> (file:///Users/maxm/go/src/github.com/maxmcd/go-town/go-js/index.ts:5:1)
 ```
 
-Weird. We don't see a panic of another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported.
+Weird. We don't see a panic or another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported. Let's move on.
 
 At this point we're likely going to have to write the server logic ourselves. We have a `fetch` wrapper, but nothing to take a server request and ferry it over to the Go side. We'll have to build that. If this already exists please tell me, I could not find any kind of library that would handle sending `Request` or `Response` back and forth between Go+WASM and js/ts.
 
 From here I think we have two options:
 
 1. Continue with Go's syscall/js functionality. Write a library that makes javascript calls with syscall/js to handle requests for our server.
-2. Switch to Tinygo, get much smaller WASM binaries, leave the `fetch` wrapper behind :(, but do the work in a WASI context that we know will be supported into the future.
+2. Switch to Tinygo, get much smaller WASM binaries, lose so Go language featuers, leave the `fetch` wrapper behind :(, but do the work in a WASI context that we know will be supported into the future.
 
 For now, I went with option #2. That maybe seem a little unexpected, but now that we're going to implement the http stuff ourselves it feels easier to work with Tinygo and WASI than the syscall/js lib. Sometime in the near future I imagine I'll come crawling back to sycall/js for more robust functionality.
 
@@ -340,6 +340,8 @@ export default async function(req: Request): Promise<Response> {
 You can see the WASM binary uploaded here: https://maxm-wasmblobhost.web.val.run/
 
 I pasted the resulting code into an HTTP Val. You can see everything working here: https://www.val.town/v/maxm/aquamarinePiranha
+
+<iframe width="100%" height="400px" src="https://www.val.town/embed/maxm/aquamarinePiranha" title="Val Town" frameborder="0" allow="web-share" allowfullscreen></iframe>
 
 ## Conclusion
 
