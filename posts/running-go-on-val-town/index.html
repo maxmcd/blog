@@ -11,8 +11,8 @@
 <meta itemprop="description" content="Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?
  If you want to skip all this and just run Go on Val Town you can follow the instructions here.">
 <meta itemprop="datePublished" content="2024-05-24T06:21:13&#43;00:00" />
-<meta itemprop="dateModified" content="2024-05-24T15:58:01-05:00" />
-<meta itemprop="wordCount" content="2030">
+<meta itemprop="dateModified" content="2024-05-29T12:27:21-04:00" />
+<meta itemprop="wordCount" content="2038">
 
 
 
@@ -22,7 +22,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://maxmcd.com/posts/running-go-on-val-town/" />
 <meta property="article:published_time" content="2024-05-24T06:21:13+00:00" />
-<meta property="article:modified_time" content="2024-05-24T15:58:01-05:00" />
+<meta property="article:modified_time" content="2024-05-29T12:27:21-04:00" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Running Go on Val Town"/>
 <meta name="twitter:description" content="Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?
@@ -73,9 +73,9 @@
 			<div class="content">
 				<p>Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on <a href="https://val.town">Val Town</a> and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?</p>
 <blockquote>
-<p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/crimsonMacaw">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p>
+<p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/tinygoWasmHelloWorld">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p>
 </blockquote>
-<p>About a month ago I started working at Val Town. Before that I had spent many years writing Go and had always thought it would be quite poetic to get a Go HTTP handler running on Val Town. The real dream is to get the Go compiler and Language Server running in browser so that you could really have the dynamic feel of Val Town, but for now we&rsquo;re going to settle for &ldquo;Writing some Go code, compiling it, and having it handle an http request in Val Town&rdquo;.</p>
+<p>About two months ago I started working at Val Town. Before that I had spent many years writing Go and had always thought it would be quite poetic to get a Go HTTP handler running on Val Town. The real dream is to get the Go compiler and Language Server running in browser so that you could really have the dynamic feel of Val Town, but for now we&rsquo;re going to settle for &ldquo;Writing some Go code, compile it, and having it handle an http request in Val Town&rdquo;.</p>
 <p>I thought it would be easy, and set out to find out:</p>
 <h2 id="setting-the-stage">Setting the stage<a href="#setting-the-stage" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
 <p>Val Town runs <a href="https://deno.com/">Deno</a>, so our goal for the moment is getting something running in Deno. We want to end up with something like this</p>
@@ -86,7 +86,7 @@
 <span class="p">}</span><span class="p">)</span>
 </code></pre></div><p>Now, there are a few tutorials online about how to get Golang (or <a href="https://tinygo.org/">Tinygo</a>) WASM running in Deno. <a href="https://dev.to/taterbase/running-a-go-program-in-deno-via-wasm-2l08">As far</a> as I <a href="(https://github.com/philippgille/go-wasm)">could find</a>, these are mostly &ldquo;Hello World&rdquo; type things, or exporting and importing functions to just do some kind of work in Go. We want an HTTP request handler though so we&rsquo;re going to require a little more functionality.</p>
 <h2 id="wasi">WASI<a href="#wasi" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
-<p>Go added WASI support. Deno has a WASI library. That should work right?</p>
+<p>Go <a href="https://go.dev/blog/wasi">added WASI support</a>. Deno has <a href="https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts">a WASI library</a>. That should work right?</p>
 <p>We write our Go program with reckless optimism. Let&rsquo;s see if we can make an http request.</p>
 <div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
@@ -152,12 +152,12 @@ error: Top-level await promise never resolved
 await go.run<span class="o">(</span>inst.instance<span class="o">)</span><span class="p">;</span>
 ^
     at &lt;anonymous&gt; <span class="o">(</span>file:///Users/maxm/go/src/github.com/maxmcd/go-town/go-js/index.ts:5:1<span class="o">)</span>
-</code></pre></div><p>Weird. We don&rsquo;t see a panic of another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported.</p>
+</code></pre></div><p>Weird. We don&rsquo;t see a panic or another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported. Let&rsquo;s move on.</p>
 <p>At this point we&rsquo;re likely going to have to write the server logic ourselves. We have a <code>fetch</code> wrapper, but nothing to take a server request and ferry it over to the Go side. We&rsquo;ll have to build that. If this already exists please tell me, I could not find any kind of library that would handle sending <code>Request</code> or <code>Response</code> back and forth between Go+WASM and js/ts.</p>
 <p>From here I think we have two options:</p>
 <ol>
 <li>Continue with Go&rsquo;s syscall/js functionality. Write a library that makes javascript calls with syscall/js to handle requests for our server.</li>
-<li>Switch to Tinygo, get much smaller WASM binaries, leave the <code>fetch</code> wrapper behind :(, but do the work in a WASI context that we know will be supported into the future.</li>
+<li>Switch to Tinygo, get much smaller WASM binaries, lose so Go language featuers, leave the <code>fetch</code> wrapper behind :(, but do the work in a WASI context that we know will be supported into the future.</li>
 </ol>
 <p>For now, I went with option #2. That maybe seem a little unexpected, but now that we&rsquo;re going to implement the http stuff ourselves it feels easier to work with Tinygo and WASI than the syscall/js lib. Sometime in the near future I imagine I&rsquo;ll come crawling back to sycall/js for more robust functionality.</p>
 <h2 id="tinygo-and-wasi">Tinygo and WASI<a href="#tinygo-and-wasi" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
@@ -302,6 +302,7 @@ export default async function(req: Request): Promise&lt;Response&gt; {
 }
 </code></pre></div><p>You can see the WASM binary uploaded here: <a href="https://maxm-wasmblobhost.web.val.run/">https://maxm-wasmblobhost.web.val.run/</a></p>
 <p>I pasted the resulting code into an HTTP Val. You can see everything working here: <a href="https://www.val.town/v/maxm/aquamarinePiranha">https://www.val.town/v/maxm/aquamarinePiranha</a></p>
+<iframe width="100%" height="400px" src="https://www.val.town/embed/maxm/aquamarinePiranha" title="Val Town" frameborder="0" allow="web-share" allowfullscreen></iframe>
 <h2 id="conclusion">Conclusion<a href="#conclusion" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
 <p>This is all a bit of silliness. Quite inefficient. Not super useful. But, it was quite a bit of fun to play around with all this stuff. I hope one day I can make a little Go playground where you can write Go with a language server and compile and run HTTP handlers from the browser. That would be cool, and fun (still not very useful), and this is a step in that direction :)</p>
 
@@ -312,9 +313,9 @@ export default async function(req: Request): Promise&lt;Response&gt; {
 				<p>
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://maxmcd.com/tags/val.town">val.town</a></span><span class="tag"><a href="https://maxmcd.com/tags/go">go</a></span><span class="tag"><a href="https://maxmcd.com/tags/wasm">wasm</a></span>
 				</p>
-				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>2030 Words</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>2038 Words</p>
 				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2024-05-24 06:21 UTC</p>
-				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg><a href="https://github.com/maxmcd/blog/commit/4d679705031a7bd391b46d39f98f9ac580275d76" target="_blank" rel="noopener">4d67970</a> @ 2024-05-24</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg><a href="https://github.com/maxmcd/blog/commit/d80a7f522914a07232ca94ebb4344e53f2365324" target="_blank" rel="noopener">d80a7f5</a> @ 2024-05-29</p>
 			</footer>
 		</article>
 		<aside id="toc">

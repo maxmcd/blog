@@ -19,9 +19,9 @@
  If you want to skip all this and just run Go on Val Town you can follow the instructions here.</description>
 			<content type="html"><![CDATA[<p>Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on <a href="https://val.town">Val Town</a> and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?</p>
 <blockquote>
-<p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/crimsonMacaw">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p>
+<p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/tinygoWasmHelloWorld">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p>
 </blockquote>
-<p>About a month ago I started working at Val Town. Before that I had spent many years writing Go and had always thought it would be quite poetic to get a Go HTTP handler running on Val Town. The real dream is to get the Go compiler and Language Server running in browser so that you could really have the dynamic feel of Val Town, but for now we&rsquo;re going to settle for &ldquo;Writing some Go code, compiling it, and having it handle an http request in Val Town&rdquo;.</p>
+<p>About two months ago I started working at Val Town. Before that I had spent many years writing Go and had always thought it would be quite poetic to get a Go HTTP handler running on Val Town. The real dream is to get the Go compiler and Language Server running in browser so that you could really have the dynamic feel of Val Town, but for now we&rsquo;re going to settle for &ldquo;Writing some Go code, compile it, and having it handle an http request in Val Town&rdquo;.</p>
 <p>I thought it would be easy, and set out to find out:</p>
 <h2 id="setting-the-stage">Setting the stage</h2>
 <p>Val Town runs <a href="https://deno.com/">Deno</a>, so our goal for the moment is getting something running in Deno. We want to end up with something like this</p>
@@ -32,7 +32,7 @@
 <span class="p">}</span><span class="p">)</span>
 </code></pre></div><p>Now, there are a few tutorials online about how to get Golang (or <a href="https://tinygo.org/">Tinygo</a>) WASM running in Deno. <a href="https://dev.to/taterbase/running-a-go-program-in-deno-via-wasm-2l08">As far</a> as I <a href="(https://github.com/philippgille/go-wasm)">could find</a>, these are mostly &ldquo;Hello World&rdquo; type things, or exporting and importing functions to just do some kind of work in Go. We want an HTTP request handler though so we&rsquo;re going to require a little more functionality.</p>
 <h2 id="wasi">WASI</h2>
-<p>Go added WASI support. Deno has a WASI library. That should work right?</p>
+<p>Go <a href="https://go.dev/blog/wasi">added WASI support</a>. Deno has <a href="https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts">a WASI library</a>. That should work right?</p>
 <p>We write our Go program with reckless optimism. Let&rsquo;s see if we can make an http request.</p>
 <div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
 
@@ -98,12 +98,12 @@ error: Top-level await promise never resolved
 await go.run<span class="o">(</span>inst.instance<span class="o">)</span><span class="p">;</span>
 ^
     at &lt;anonymous&gt; <span class="o">(</span>file:///Users/maxm/go/src/github.com/maxmcd/go-town/go-js/index.ts:5:1<span class="o">)</span>
-</code></pre></div><p>Weird. We don&rsquo;t see a panic of another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported.</p>
+</code></pre></div><p>Weird. We don&rsquo;t see a panic or another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported. Let&rsquo;s move on.</p>
 <p>At this point we&rsquo;re likely going to have to write the server logic ourselves. We have a <code>fetch</code> wrapper, but nothing to take a server request and ferry it over to the Go side. We&rsquo;ll have to build that. If this already exists please tell me, I could not find any kind of library that would handle sending <code>Request</code> or <code>Response</code> back and forth between Go+WASM and js/ts.</p>
 <p>From here I think we have two options:</p>
 <ol>
 <li>Continue with Go&rsquo;s syscall/js functionality. Write a library that makes javascript calls with syscall/js to handle requests for our server.</li>
-<li>Switch to Tinygo, get much smaller WASM binaries, leave the <code>fetch</code> wrapper behind :(, but do the work in a WASI context that we know will be supported into the future.</li>
+<li>Switch to Tinygo, get much smaller WASM binaries, lose so Go language featuers, leave the <code>fetch</code> wrapper behind :(, but do the work in a WASI context that we know will be supported into the future.</li>
 </ol>
 <p>For now, I went with option #2. That maybe seem a little unexpected, but now that we&rsquo;re going to implement the http stuff ourselves it feels easier to work with Tinygo and WASI than the syscall/js lib. Sometime in the near future I imagine I&rsquo;ll come crawling back to sycall/js for more robust functionality.</p>
 <h2 id="tinygo-and-wasi">Tinygo and WASI</h2>
@@ -248,6 +248,7 @@ export default async function(req: Request): Promise&lt;Response&gt; {
 }
 </code></pre></div><p>You can see the WASM binary uploaded here: <a href="https://maxm-wasmblobhost.web.val.run/">https://maxm-wasmblobhost.web.val.run/</a></p>
 <p>I pasted the resulting code into an HTTP Val. You can see everything working here: <a href="https://www.val.town/v/maxm/aquamarinePiranha">https://www.val.town/v/maxm/aquamarinePiranha</a></p>
+<iframe width="100%" height="400px" src="https://www.val.town/embed/maxm/aquamarinePiranha" title="Val Town" frameborder="0" allow="web-share" allowfullscreen></iframe>
 <h2 id="conclusion">Conclusion</h2>
 <p>This is all a bit of silliness. Quite inefficient. Not super useful. But, it was quite a bit of fun to play around with all this stuff. I hope one day I can make a little Go playground where you can write Go with a language server and compile and run HTTP handlers from the browser. That would be cool, and fun (still not very useful), and this is a step in that direction :)</p>
 ]]></content>
