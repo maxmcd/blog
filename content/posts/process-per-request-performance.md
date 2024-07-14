@@ -44,7 +44,8 @@ When under load, a single one of Val Town's Node servers cannot exceed 40 req/s
 and it spends 30% of the time blocked on calls to `spawn`. Why is it so slow?
 Can we make it any faster?
 
-Let's write up some baseline examples and run them in Node, Deno, Bun, Go, and Rust and see how fast we can get them.
+Let's write up some baseline examples and run them in Node, Deno, Bun, Go, and
+Rust and see how fast we can get them.
 
 I am running all of these on a Hetzner CCX33 with 8 vCPUs and 32 GB of ram. I am
 benchmarking with [bombardier](https://github.com/codesenberg/bombardier)
@@ -52,8 +53,12 @@ running on the same machine. The command I'll run to benchmark each server is
 `bombardier -c 30 -n 10000 http://localhost:8001`. 10,000 total requests over 30
 connections. I prewarm each server before running the benchmark.
 
-Each implementation will run an HTTP server, spawn `echo hi` for each request, and
-respond with the stdout of the command. The Node/Bun/Deno server source is at the beginning of this post. The Go source is [here](https://github.com/maxmcd/process-per-request/blob/fb2f5f9518d62f058f7e587580c302b56f7a5781/go/main.go) and the Rust source is [here](https://github.com/maxmcd/process-per-request/blob/0a6442f656fe7bc8f6c61ef2c5fdef65c6afa0f1/rust/src/main.rs).
+Each implementation will run an HTTP server, spawn `echo hi` for each request,
+and respond with the stdout of the command. The Node/Bun/Deno server source is
+at the beginning of this post. The Go source is
+[here](https://github.com/maxmcd/process-per-request/blob/fb2f5f9518d62f058f7e587580c302b56f7a5781/go/main.go)
+and the Rust source is
+[here](https://github.com/maxmcd/process-per-request/blob/0a6442f656fe7bc8f6c61ef2c5fdef65c6afa0f1/rust/src/main.rs).
 
 Here are the results:
 
@@ -73,11 +78,13 @@ thread](https://github.com/node/node/issues/14917) was an interesting read,
 and while in my testing things have improved since the time of that post, Node
 still spends an awful lot of time blocking the main thread for each Spawn call.
 
-Switching to Bun or Deno would improve this a lot. That is great to know, but let's try and improve things with Node.
+Switching to Bun or Deno would improve this a lot. That is great to know, but
+let's try and improve things with Node.
 
 ## Node `cluster` Module
 
-The simplest thing we can do spawn more processes and run an http server per-process using Node's `cluster` module. Like so:
+The simplest thing we can do spawn more processes and run an http server
+per-process using Node's `cluster` module. Like so:
 
 ```js
 import { spawn } from "node:child_process";
@@ -118,7 +125,8 @@ Nice to know there is some speedup here. We'll move on from it for now.
 
 ## Move The Spawn Calls To Worker Threads
 
-If the `spawn` calls are blocking the main thread, let's move them to worker threads.
+If the `spawn` calls are blocking the main thread, let's move them to worker
+threads.
 
 Here's our `worker-threads/worker.js` code. We listen for messages with a
 command and an id. We run it and post the result back. We're using `execFile`
