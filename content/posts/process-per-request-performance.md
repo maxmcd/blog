@@ -14,13 +14,8 @@ tags:
 ---
 
 <style>
-    table code {
-        /* font-size: 14px; */
-        background-color: initial;
-    }
-    table td, table th {
-        padding: 0.5rem;
-    }
+    table code { background-color: initial }
+    table td, table th { padding: 0.5rem }
 </style>
 
 How fast can an HTTP server in Node run if we spawn a process for every request?
