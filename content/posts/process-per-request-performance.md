@@ -62,13 +62,13 @@ and the Rust source is
 
 Here are the results:
 
-| Language/Runtime | Req/s | Command |
-|- | -  | - |
-| Node | 651  | `node baseline.js` |
-| Deno | 2,290  | `deno run --allow-all baseline.js`
-| Bun | 2,208  | `bun run baseline.js`
-| Go | 5,227  | `go run go/main.go`
-| Rust (tokio) | 5,466  | `cd rust && cargo run --release`
+| Language/Runtime | Req/s | Command                            |
+| ---------------- | ----- | ---------------------------------- |
+| Node             | 651   | `node baseline.js`                 |
+| Deno             | 2,290 | `deno run --allow-all baseline.js` |
+| Bun              | 2,208 | `bun run baseline.js`              |
+| Go               | 5,227 | `go run go/main.go`                |
+| Rust (tokio)     | 5,466 | `cd rust && cargo run --release`   |
 
 Ok, so Node is slow. Deno and Bun have figured out how to make this faster, and
 the compiled, thread-pool languages are much faster again.
@@ -112,11 +112,11 @@ still make spawns fast.
 
 Here are the results:
 
-| Language/Runtime | Req/s | Command |
-|- | -  | - |
-| Node | 1,766 | `node cluster.js` |
-| Deno | 2,133 | `deno run --allow-all cluster.js`
-| Bun | n/a | "node:cluster is not yet implemented in Bun"
+| Language/Runtime | Req/s | Command                                      |
+| ---------------- | ----- | -------------------------------------------- |
+| Node             | 1,766 | `node cluster.js`                            |
+| Deno             | 2,133 | `deno run --allow-all cluster.js`            |
+| Bun              | n/a   | "node:cluster is not yet implemented in Bun" |
 
 Super weird. Deno is slower, Bun doesn't work just yet, and Node has improved
 a lot, but I would have expected it to be even faster.
@@ -191,11 +191,11 @@ http
 
 Results!:
 
-| Language/Runtime | Req/s  | Command |
-|- | -  | - |
-| Node | 426  | `node worker-threads/index.js` |
-| Deno | 3,601  | `deno run --allow-all worker-threads/index.js` |
-| Bun | 2,898  | `bun run worker-threads/index.js` |
+| Language/Runtime | Req/s | Command                                        |
+| ---------------- | ----- | ---------------------------------------------- |
+| Node             | 426   | `node worker-threads/index.js`                 |
+| Deno             | 3,601 | `deno run --allow-all worker-threads/index.js` |
+| Bun              | 2,898 | `bun run worker-threads/index.js`              |
 
 Node is slower! Ok, so presumably we are not bypassing Node's bottleneck by
 using threads. So we're doing the same work with the added overhead of
@@ -254,11 +254,11 @@ index 5f025ca..9b3fcf5 100644
 
 Nice. And the results:
 
-| Language/Runtime | Req/s  | Command |
-|- | -  | - |
-| Node | 2,209  | `node child-process/index.js` |
-| Deno | 3,800  | `deno run --allow-all child-process/index.js` |
-| Bun | 3,871  | `bun run worker-threads/index.js` |
+| Language/Runtime | Req/s | Command                                       |
+| ---------------- | ----- | --------------------------------------------- |
+| Node             | 2,209 | `node child-process/index.js`                 |
+| Deno             | 3,800 | `deno run --allow-all child-process/index.js` |
+| Bun              | 3,871 | `bun run worker-threads/index.js`             |
 
 
 Nice, good speedups all around. I am very curious what the bottleneck is that is
@@ -275,9 +275,9 @@ const worker = fork("./child-process/worker.js", {
 });
 ```
 
-| Language/Runtime | Req/s  | Command |
-|- | -  | - |
-| Node + Bun | 3,853  | `node child-process/index.js` |
+| Language/Runtime | Req/s | Command                       |
+| ---------------- | ----- | ----------------------------- |
+| Node + Bun       | 3,853 | `node child-process/index.js` |
 
 Hah, cool. I get to use Node on the main thread and leverage Bun's performance.
 
@@ -316,12 +316,12 @@ Similar model from before, but at any given time there is only one spawn running
 per-process. Let's see how it does.
 
 
-| Language/Runtime | Req/s  | Command |
-|- | -  | - |
-| Node | 2,552  | `node process-per-process/index.js` |
-| Deno | 4,052 | `deno run --allow-all child-process/index.js` |
-| Bun | 3,847  | `bun run worker-threads/index.js` |
-| Node + Bun | 4,042  | `node process-per-process/index.js` |
+| Language/Runtime | Req/s | Command                                       |
+| ---------------- | ----- | --------------------------------------------- |
+| Node             | 2,552 | `node process-per-process/index.js`           |
+| Deno             | 4,052 | `deno run --allow-all child-process/index.js` |
+| Bun              | 3,847 | `bun run worker-threads/index.js`             |
+| Node + Bun       | 4,042 | `node process-per-process/index.js`           |
 
 Roughly the same or faster than before!
 
