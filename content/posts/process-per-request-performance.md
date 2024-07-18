@@ -277,51 +277,97 @@ const worker = fork("./child-process/worker.js", {
 Hah, cool. I get to use Node on the main thread and leverage Bun's performance.
 
 
-## Process Per Process
+## Stdio
 
-One issue with this child process pattern is that it become difficult to
-interact with stdio streams. We'd need to send the stdout bytes over
-`process.send` and I worry that could get expensive quickly. It's fine with just
-`hi\n`, but with high log volume it would be a bummer to pay the serialization
-cost.
+Logs. The previous implementations assume there will be minimal log output, but
+what if there's a lot? We could send the logs using `process.send`, but that
+will be quite expensive if our output bytes are serialized to JSON.
 
-To get around this, we can switch to a model where we have a process pool, and
-run one `spawn` per process at a time. When the `spawn` is complete we reset the
-process and put it back into the pool for future use.
+I spent a lot of time in this rabbit hole. Here's a rough summary of the things
+I tried:
 
-Let's try that:
+1. Passing file descriptors between processes. Like passing the stdout/err back
+   up to the parent process. I tried this a few different ways but couldn't get
+   it working so that we'd always capture all the bytes written.
+2. Just using `process.send`. This works, but is only performant if you use
+   `serialization: "advanced"` so that you can send bytes without serialization.
+   This doesn't work in Deno and Bun.
+3. I created a pair of [Abstract
+   Sockets](https://man7.org/linux/man-pages/man7/unix.7.html) for each spawn
+   call and sent the logs over the socket. This spends too much time setting up
+   the sockets to be worth it.
 
-```js
-const pool = new Pool(factory, { max: 8, min: 8 });
+Also abstract sockets are crazy. I'm familiar with [Unix Domain
+Sockets](https://en.wikipedia.org/wiki/Unix_domain_socket) where you have a file
+called (eg) `something.sock` and you can listen on it and connect to it just
+like a network address. Turns out, that if you use a Unix socket and the
+filename starts with a null byte, like `\0foo` the socket will not exist on the
+filesystem and it'll be automatically removed when no longer used. Weird! Cool!
 
+After all this testing I have two approaches that work pretty well.
+
+1. Set up a pool of processes with `.fork()` and also set up a separate abstract
+   socket for each one to send logs.
+2. Simply use `process.send` but use `serialization: "advanced"`.
+
+Let's see how those work out.
+
+We'll need something that outputs a lot of logs. So I grabbed the `main.c` file
+from Sqlite's source. This is a 163Kb file. We'll run the command `cat main.c`
+to print it out.
+
+Here's our `baseline.js` again with that update:
+```ts
+import { spawn } from "node:child_process";
+import http from "node:http";
 http
-  .createServer(async (_, res) => {
-    const swimmer = await pool.acquire();
-    swimmer.cp.send(["echo", "hi"]);
-    await new Promise((resolve) => swimmer.ee.once("exit", resolve));
-    swimmer.stdio.stdout.pipe(res);
-    pool.release(swimmer);
-  })
+  .createServer((_, res) => spawn("cat", ["main.c"]).stdout.pipe(res))
   .listen(8001);
 ```
 
-I've removed most of the implementation for brevity, you can [check it out
-here](https://github.com/maxmcd/process-per-request/tree/0a6442f656fe7bc8f6c61ef2c5fdef65c6afa0f1/process-per-process).
-Similar model from before, but at any given time there is only one spawn running
-per-process. Let's see how it does.
+I've updated the Go and Rust code as well. Let's see how they do:
 
+| Language/Runtime | Req/s | Command                            |
+| ---------------- | ----- | ---------------------------------- |
+| Node             | 374   | `node baseline.js`                 |
+| Deno             | 667   | `deno run --allow-all baseline.js` |
+| Bun              | 1,374 | `bun run baseline.js`              |
+| Go               | 2,757 | `go run go/main.go`                |
+| Rust (tokio)     | 3,535 | `cd rust && cargo run --release`   |
+
+
+Fascinating. It's cool to see Bun and Rust pull ahead here compared to the
+previous benchmarks. Node is still slow very slow and Deno is surprisingly
+unhappy with this workload.
+
+
+Next let's try my abstract socket communication channel implementation. It's getting quite complex so I won't post it here, but you can [take a look here](TKTKTKTK).
+
+| Language/Runtime | Req/s | Command                                                    |
+| ---------------- | ----- | ---------------------------------------------------------- |
+| Node             | 1,040 | `node child-process-comm-channel/index.js`                 |
+| Node + Bun       | 1,118 | `node child-process-comm-channel/index.js`                 |
+| Deno             | 1,301 | `deno run --allow-all child-process-comm-channel/index.js` |
+| Bun              | 1,189 | `bun child-process-comm-channel/index.js`                  |
+
+Weird! Nice speedup in Node, very nice. Bun is unhappy and Deno likes this a little bit more.
+
+```ts
+import { spawn } from "node:child_process";
+import process from "node:process";
+
+process.on("message", (message) => {
+  const [id, cmd, ...args] = message;
+  const cp = spawn(cmd, args);
+  cp.stdout.on("data", (data) => process.send([id, "stdout", data]));
+  cp.stderr.on("data", (data) => process.send([id, "stderr", data]));
+  cp.on("close", (code, signal) => process.send([id, "exit", code, signal]));
+});
+```
 
 | Language/Runtime | Req/s | Command                                       |
 | ---------------- | ----- | --------------------------------------------- |
-| Node             | 2,552 | `node process-per-process/index.js`           |
-| Deno             | 4,052 | `deno run --allow-all child-process/index.js` |
-| Bun              | 3,847 | `bun run worker-threads/index.js`             |
-| Node + Bun       | 4,042 | `node process-per-process/index.js`           |
-
-Roughly the same or faster than before!
-
-Ok, I think with this path it would be easy enough to put together a library
-that leverages this pattern to get higher spawn performance on Node. Lovely.
+| Node             | 922   | `node stdio/child-process-send-logs/index.js` |
 
 
 ## Final Thoughts
@@ -331,8 +377,12 @@ could unlock more performance. With all the new `spawn` calls and worker threads
 I bet the CPU memory cache thrashing is a mess, and I wonder if there's a way to
 organize things to play a little more nicely with the computer.
 
+Also worth noting that we have optimized for a spawned process that returns very
+quickly. If spawned processes run for some time, maybe some of these
+optimizations are misplaced.
+
 Using Node and Bun together is a fun pattern and it's nice to see it lead to
-such a speedup.
+such a speedup. Please support Node's IPC Deno!
 
 Let me know if there's anything else I should experiment with here! See you next
 time :)
