@@ -46,7 +46,8 @@ I am running all of these on a Hetzner CCX33 with 8 vCPUs and 32 GB of ram. I am
 benchmarking with [bombardier](https://github.com/codesenberg/bombardier)
 running on the same machine. The command I'll run to benchmark each server is
 `bombardier -c 30 -n 10000 http://localhost:8001`. 10,000 total requests over 30
-connections. I prewarm each server before running the benchmark.
+connections. I prewarm each server before running the benchmark. I'm using Go
+v1.22.2, Rust v1.77.2, Node v22.3.0, Bun 1.1.20, Deno 1.44.2.
 
 Each implementation will run an HTTP server, spawn `echo hi` for each request,
 and respond with the stdout of the command. The Node/Bun/Deno server source is
@@ -197,8 +198,8 @@ using threads. So we're doing the same work with the added overhead of
 coordinating with the worker threads. Bummer.
 
 Deno loves this, and Bun likes it a little more. Generally, it's nice to see
-that Bun and Deno don't see much of an improvement here and they're already
-doing a good job of keeping the sycall overhead off of the execution thread.
+that Bun and Deno don't see much of an improvement here. They're already doing a
+good job of keeping the sycall overhead off of the execution thread.
 
 Onward.
 
@@ -256,7 +257,7 @@ Nice. And the results:
 | Bun              | 3,871 | `bun run worker-threads/index.js`             |
 
 
-Nice, good speedups all around. I am very curious what the bottleneck is that is
+Good speedups all around. I am very curious what the bottleneck is that is
 preventing Deno and Bun from getting to Rust/Go speeds. Please let me know if
 you have suggestions for how to dig into that!
 
@@ -340,17 +341,53 @@ Fascinating. It's cool to see Bun and Rust pull ahead here compared to the
 previous benchmarks. Node is still slow very slow and Deno is surprisingly
 unhappy with this workload.
 
-
-Next let's try my abstract socket communication channel implementation. It's getting quite complex so I won't post it here, but you can [take a look here](TKTKTKTK).
+Next let's try my abstract socket communication channel implementation. It's
+getting quite complex so I won't post it here, but you can [take a look
+here](https://github.com/maxmcd/process-per-request/tree/7528cd8045c998c8b5451961e0818473b4a81860/child-process-comm-channel).
 
 | Language/Runtime | Req/s | Command                                                    |
 | ---------------- | ----- | ---------------------------------------------------------- |
-| Node             | 1,040 | `node child-process-comm-channel/index.js`                 |
-| Node + Bun       | 1,118 | `node child-process-comm-channel/index.js`                 |
-| Deno             | 1,301 | `deno run --allow-all child-process-comm-channel/index.js` |
-| Bun              | 1,189 | `bun child-process-comm-channel/index.js`                  |
+| Node             | 1,336 | `node child-process-comm-channel/index.js`                 |
+| Node + Bun       | 2,635 | `node child-process-comm-channel/index.js`                 |
+| Deno             | 862   | `deno run --allow-all child-process-comm-channel/index.js` |
+| Bun              | 1,833 | `bun child-process-comm-channel/index.js`                  |
 
-Weird! Nice speedup in Node, very nice. Bun is unhappy and Deno likes this a little bit more.
+Haha. I had seen some random benchmark results where Node+Bun was faster than
+bun alone, but it never netted out in the final runs.
+
+The Deno results are quite perplexing. In implementing this example I had a
+"bug" where I was buffering the response as a string. Here's the diff of me fixing it:
+
+```diff
+@@ -88,9 +88,8 @@ const spawnInWorker = async (res) => {
+   worker.child.send([id, "spawn", ["cat", ["main.c"]]]);
+-  let resp = "";
+   worker.ee.on(id, (msg, data) => {
+     if (msg == MessageType.STDOUT) {
+-      resp += data.toString();
++      res.write(data);
+     }
+     if (msg == MessageType.STDOUT_CLOSE) {
+-      res.end(resp);
++      res.end();
+       worker.requests -= 1;
+```
+
+Deno performs far better before this fix! Node and Bun both perform better once
+the string buffer is removed.
+
+| Language/Runtime     | Req/s | Command                                                    |
+| -------------------- | ----- | ---------------------------------------------------------- |
+| Deno + string buffer | 1,453 | `deno run --allow-all child-process-comm-channel/index.js` |
+
+Weird!
+
+Finally, here is the `process.send` implementation. It is fast and also
+incredibly simple to implement. I am a little unexcited about this solution
+because it is slower than I'd like, doesn't support Deno and Bun, and there's
+very little space to improve things. However, this implementation is deeply
+practical and easy to understand, which is beautiful. Here's the source of
+`worker.js`, the rest [is here](https://github.com/maxmcd/process-per-request/tree/7528cd8045c998c8b5451961e0818473b4a81860/child-process-send-logs).
 
 ```ts
 import { spawn } from "node:child_process";
@@ -367,19 +404,52 @@ process.on("message", (message) => {
 
 | Language/Runtime | Req/s | Command                                       |
 | ---------------- | ----- | --------------------------------------------- |
-| Node             | 922   | `node stdio/child-process-send-logs/index.js` |
+| Node             | 1,179   | `node child-process-send-logs/index.js` |
 
+Very nice, probably the practical choice if you are only targeting Node.
+
+## Load Balancing
+
+A quick note on load balancing between processes. Both Go and Rust [have
+complicated schedulers](https://rakyll.org/scheduler/) that [distribute work
+efficiently](https://tokio.rs/blog/2019-10-scheduler). So far, when picking a
+worker I've been grabbing a random one:
+
+```ts
+const workers = await Promise.all(Array.from({ length: 8 }, newWorker));
+const randomWorker = () => workers[Math.floor(Math.random() * workers.length)];
+```
+
+However, we can also implement round-robin, and least-connections style load
+balancing. [See a wonderful writeup on those
+here](https://samwho.dev/load-balancing/).
+
+```ts
+const pickWorkerInOrder = () => workers[(count += 1) % workers.length];
+const pickWorkerWithLeastRequests = () =>
+  workers.reduce((selectedWorker, worker) =>
+    worker.requests < selectedWorker.requests ? worker : selectedWorker
+  );
+```
+
+Sadly I didn't see consistent performance improvements with these approaches.
+They all perform about the same. Maybe more typical workloads where the spawn
+calls are not entirely uniform would benefit more from these changes.
+
+## Library?
+
+It seems possible, given all of these findings, to implement a `child_process`
+library that implements the same API surface as `node:child_process` but farms
+the spawn calls out to a process pool. Maybe I will write that, or maybe you
+will. Please [let me know](https://x.com/mxmcd) if there's interest.
 
 ## Final Thoughts
 
 We're sadly at the limits of my knowledge/experimentation, but I wonder what
-could unlock more performance. With all the new `spawn` calls and worker threads
-I bet the CPU memory cache thrashing is a mess, and I wonder if there's a way to
-organize things to play a little more nicely with the computer.
+could unlock more performance.
 
-Also worth noting that we have optimized for a spawned process that returns very
-quickly. If spawned processes run for some time, maybe some of these
-optimizations are misplaced.
+It was really fun to see improved performance and what didn't, and the random
+moments where Deno/Bun/Node were affected differently.
 
 Using Node and Bun together is a fun pattern and it's nice to see it lead to
 such a speedup. Please support Node's IPC Deno!
