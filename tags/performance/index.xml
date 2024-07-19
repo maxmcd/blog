@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>deno on Max McDonnell</title>
-    <link>https://maxmcd.com/tags/deno/</link>
-    <description>Recent content in deno on Max McDonnell</description>
+    <title>performance on Max McDonnell</title>
+    <link>https://maxmcd.com/tags/performance/</link>
+    <description>Recent content in performance on Max McDonnell</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
     <lastBuildDate>Fri, 12 Jul 2024 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://maxmcd.com/tags/deno/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://maxmcd.com/tags/performance/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -20,16 +20,6 @@
       <guid>https://maxmcd.com/posts/process-per-request-performance/</guid>
       <description>table code { background-color: initial } table td, table th { padding: 0.5rem }  How fast can an HTTP server in Node run if we spawn a process for every request?
 import { spawn } from &amp;#34;node:child_process&amp;#34;; import http from &amp;#34;node:http&amp;#34;; http .createServer((req, res) =&amp;gt; spawn(&amp;#34;echo&amp;#34;, [&amp;#34;hi&amp;#34;]).stdout.pipe(res)) .listen(8001); You should avoid spawning a new process for every HTTP request if at all possible. Creating a new process or thread is expensive and could easily become your core bottleneck.</description>
-    </item>
-    
-    <item>
-      <title>Running Go on Val Town</title>
-      <link>https://maxmcd.com/posts/running-go-on-val-town/</link>
-      <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
-      
-      <guid>https://maxmcd.com/posts/running-go-on-val-town/</guid>
-      <description>Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?
- If you want to skip all this and just run Go on Val Town you can follow the instructions here.</description>
     </item>
     
   </channel>

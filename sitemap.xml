@@ -3,32 +3,57 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>https://maxmcd.com/tags/bun/</loc>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/posts/process-per-request-performance/</loc>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://maxmcd.com/tags/deno/</loc>
-    <lastmod>2024-05-29T12:29:31-04:00</lastmod>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.com/tags/go/</loc>
-    <lastmod>2024-05-29T12:29:31-04:00</lastmod>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/js/</loc>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.com/</loc>
-    <lastmod>2024-05-29T12:29:31-04:00</lastmod>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/node/</loc>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/tags/performance/</loc>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.com/posts/</loc>
-    <lastmod>2024-05-29T12:29:31-04:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://maxmcd.com/posts/running-go-on-val-town/</loc>
-    <lastmod>2024-05-29T12:29:31-04:00</lastmod>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
   </url>
   
   <url>
     <loc>https://maxmcd.com/tags/</loc>
+    <lastmod>2024-07-19T10:13:20-04:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://maxmcd.com/posts/running-go-on-val-town/</loc>
     <lastmod>2024-05-29T12:29:31-04:00</lastmod>
   </url>
   

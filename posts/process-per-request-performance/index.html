@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<meta name="theme-color" content="#494f5c">
+	<meta name="msapplication-TileColor" content="#494f5c">
+<meta itemprop="name" content="Can We Improve Process Per Request Performance in Node">
+<meta itemprop="description" content="table code { background-color: initial } table td, table th { padding: 0.5rem }  How fast can an HTTP server in Node run if we spawn a process for every request?
+import { spawn } from &#34;node:child_process&#34;; import http from &#34;node:http&#34;; http .createServer((req, res) =&gt; spawn(&#34;echo&#34;, [&#34;hi&#34;]).stdout.pipe(res)) .listen(8001); You should avoid spawning a new process for every HTTP request if at all possible. Creating a new process or thread is expensive and could easily become your core bottleneck.">
+<meta itemprop="datePublished" content="2024-07-12T00:00:00&#43;00:00" />
+<meta itemprop="dateModified" content="2024-07-19T10:13:20-04:00" />
+<meta itemprop="wordCount" content="2328">
+
+
+
+<meta itemprop="keywords" content="node,js,performance,bun,go,deno," /><meta property="og:title" content="Can We Improve Process Per Request Performance in Node" />
+<meta property="og:description" content="table code { background-color: initial } table td, table th { padding: 0.5rem }  How fast can an HTTP server in Node run if we spawn a process for every request?
+import { spawn } from &#34;node:child_process&#34;; import http from &#34;node:http&#34;; http .createServer((req, res) =&gt; spawn(&#34;echo&#34;, [&#34;hi&#34;]).stdout.pipe(res)) .listen(8001); You should avoid spawning a new process for every HTTP request if at all possible. Creating a new process or thread is expensive and could easily become your core bottleneck." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://maxmcd.com/posts/process-per-request-performance/" />
+<meta property="article:published_time" content="2024-07-12T00:00:00+00:00" />
+<meta property="article:modified_time" content="2024-07-19T10:13:20-04:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Can We Improve Process Per Request Performance in Node"/>
+<meta name="twitter:description" content="table code { background-color: initial } table td, table th { padding: 0.5rem }  How fast can an HTTP server in Node run if we spawn a process for every request?
+import { spawn } from &#34;node:child_process&#34;; import http from &#34;node:http&#34;; http .createServer((req, res) =&gt; spawn(&#34;echo&#34;, [&#34;hi&#34;]).stdout.pipe(res)) .listen(8001); You should avoid spawning a new process for every HTTP request if at all possible. Creating a new process or thread is expensive and could easily become your core bottleneck."/>
+
+<link rel="shortcut icon" href="/favicon.png">
+
+	<title>Can We Improve Process Per Request Performance in Node</title>
+	<link rel="stylesheet" href="https://maxmcd.com/css/style.min.c3c1dc47350d651aa2786a8532ff063ffc88db7365580e26ea1bb752c9a8a2b8.css" integrity="sha256-w8HcRzUNZRqieGqFMv8GP/yI23NlWA4m6hu3Usmoorg=" crossorigin="anonymous">
+	<script defer data-domain="maxmcd.com" src="https://plausible.io/js/plausible.js"></script>
+
+</head>
+
+<body id="page">
+	
+	<header id="site-header" class="animated slideInUp">
+		<div class="hdr-wrapper section-inner">
+			<div class="hdr-left">
+				<div class="site-branding">
+					<a href="https://maxmcd.com">Max McDonnell</a>
+				</div>
+				<nav class="site-nav hide-in-mobile">
+					
+				<a href="https://maxmcd.com/posts/">Posts</a>
+				<a href="https://maxmcd.com/about/">About</a>
+
+				</nav>
+			</div>
+			<div class="hdr-right hdr-icons">
+				<span class="hdr-social hide-in-mobile"><a href="https://twitter.com/mxmcd" target="_blank" rel="noopener me" title="Twitter"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path></svg></a><a href="https://github.com/maxmcd" target="_blank" rel="noopener me" title="Github"><svg xmlns="http://www.w3.org/2000/svg" class="feather" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg></a></span><button id="menu-btn" class="hdr-btn" title="Menu"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-menu"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg></button>
+			</div>
+		</div>
+	</header>
+	<div id="mobile-menu" class="animated fast">
+		<ul>
+			<li><a href="https://maxmcd.com/posts/">Posts</a></li>
+			<li><a href="https://maxmcd.com/about/">About</a></li>
+		</ul>
+	</div>
+
+
+	<main class="site-main section-inner animated fadeIn faster">
+		<article class="thin">
+			<header class="post-header">
+				<div class="post-meta"><span>Jul 12, 2024</span> - </div>
+				<h1>Can We Improve Process Per Request Performance in Node</h1>
+			</header>
+			<div class="content">
+				<style>
+    table code { background-color: initial }
+    table td, table th { padding: 0.5rem }
+</style>
+<p>How fast can an HTTP server in Node run if we spawn a process for every request?</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
+<span class="nx">http</span>
+<span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;hi&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span><span class="p">)</span>
+<span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>You should avoid spawning a new process for every HTTP request if at all
+possible. Creating a new process or thread is expensive and could easily become
+your core bottleneck. At <a href="https://val.town">Val Town</a> there are many request
+types where we spawn a new process to handle the request. While we&rsquo;re working to
+reduce this, it is likely that we&rsquo;ll always have some requests that spawn a
+process, and we&rsquo;d like them to be fast.</p>
+<p>When under load, a single one of Val Town&rsquo;s Node servers cannot exceed 40 req/s
+and it spends 30% of the time blocked on calls to <code>spawn</code>. Why is it so slow?
+Can we make it any faster?</p>
+<p>Let&rsquo;s write up some baseline examples and run them in Node, Deno, Bun, Go, and
+Rust and see how fast we can get them.</p>
+<p>I am running all of these on a Hetzner CCX33 with 8 vCPUs and 32 GB of ram. I am
+benchmarking with <a href="https://github.com/codesenberg/bombardier">bombardier</a>
+running on the same machine. The command I&rsquo;ll run to benchmark each server is
+<code>bombardier -c 30 -n 10000 http://localhost:8001</code>. 10,000 total requests over 30
+connections. I prewarm each server before running the benchmark. I&rsquo;m using Go
+v1.22.2, Rust v1.77.2, Node v22.3.0, Bun 1.1.20, Deno 1.44.2.</p>
+<p>Each implementation will run an HTTP server, spawn <code>echo hi</code> for each request,
+and respond with the stdout of the command. The Node/Bun/Deno server source is
+at the beginning of this post. The Go source is
+<a href="https://github.com/maxmcd/process-per-request/blob/fb2f5f9518d62f058f7e587580c302b56f7a5781/go/main.go">here</a>
+and the Rust source is
+<a href="https://github.com/maxmcd/process-per-request/blob/0a6442f656fe7bc8f6c61ef2c5fdef65c6afa0f1/rust/src/main.rs">here</a>.</p>
+<p>Here are the results:</p>
+<table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>651</td>
+<td><code>node baseline.js</code></td>
+</tr>
+<tr>
+<td>Deno</td>
+<td>2,290</td>
+<td><code>deno run --allow-all baseline.js</code></td>
+</tr>
+<tr>
+<td>Bun</td>
+<td>2,208</td>
+<td><code>bun run baseline.js</code></td>
+</tr>
+<tr>
+<td>Go</td>
+<td>5,227</td>
+<td><code>go run go/main.go</code></td>
+</tr>
+<tr>
+<td>Rust (tokio)</td>
+<td>5,466</td>
+<td><code>cd rust &amp;&amp; cargo run --release</code></td>
+</tr>
+</tbody>
+</table>
+<p>Ok, so Node is slow. Deno and Bun have figured out how to make this faster, and
+the compiled, thread-pool languages are much faster again.</p>
+<p>Node&rsquo;s <code>spawn</code> performance does seem to be notably bad. <a href="https://github.com/node/node/issues/14917">This
+thread</a> was an interesting read,
+and while in my testing things have improved since the time of that post, Node
+still spends an awful lot of time blocking the main thread for each Spawn call.</p>
+<p>Switching to Bun or Deno would improve this a lot. That is great to know, but
+let&rsquo;s try and improve things with Node.</p>
+<h2 id="node-cluster-module">Node <code>cluster</code> Module<a href="#node-cluster-module" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>The simplest thing we can do spawn more processes and run an http server
+per-process using Node&rsquo;s <code>cluster</code> module. Like so:</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">cluster</span> <span class="nx">from</span> <span class="s2">&#34;node:cluster&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">availableParallelism</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:os&#34;</span><span class="p">;</span>
+
+<span class="k">if</span> <span class="p">(</span><span class="nx">cluster</span><span class="p">.</span><span class="nx">isPrimary</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">availableParallelism</span><span class="p">(</span><span class="p">)</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="nx">cluster</span><span class="p">.</span><span class="nx">fork</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+  <span class="nx">http</span>
+    <span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;hi&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">)</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div><p>Node shares the network socket between processes here, so all of our processes
+can listen on <code>:8001</code> and they&rsquo;ll be routed requests round-robin.</p>
+<p>The main issue with this approach for me is that each HTTP server is isolated in
+it&rsquo;s own process. This can complicate things if you manage any kind of in-memory
+caching or global state that needs to be shared between these processes. I&rsquo;d
+ideally find a way to keep the single thread execution model of javascript and
+still make spawns fast.</p>
+<p>Here are the results:</p>
+<table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>1,766</td>
+<td><code>node cluster.js</code></td>
+</tr>
+<tr>
+<td>Deno</td>
+<td>2,133</td>
+<td><code>deno run --allow-all cluster.js</code></td>
+</tr>
+<tr>
+<td>Bun</td>
+<td>n/a</td>
+<td>&ldquo;node:cluster is not yet implemented in Bun&rdquo;</td>
+</tr>
+</tbody>
+</table>
+<p>Super weird. Deno is slower, Bun doesn&rsquo;t work just yet, and Node has improved
+a lot, but I would have expected it to be even faster.</p>
+<p>Nice to know there is some speedup here. We&rsquo;ll move on from it for now.</p>
+<h2 id="move-the-spawn-calls-to-worker-threads">Move The Spawn Calls To Worker Threads<a href="#move-the-spawn-calls-to-worker-threads" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>If the <code>spawn</code> calls are blocking the main thread, let&rsquo;s move them to worker
+threads.</p>
+<p>Here&rsquo;s our <code>worker-threads/worker.js</code> code. We listen for messages with a
+command and an id. We run it and post the result back. We&rsquo;re using <code>execFile</code>
+here for convenience, but it is just an abstraction on top of <code>spawn</code>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">import</span> <span class="p">{</span> <span class="nx">execFile</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">parentPort</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:worker_threads&#34;</span><span class="p">;</span>
+
+<span class="nx">parentPort</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">,</span> <span class="p">...</span><span class="nx">args</span><span class="p">]</span> <span class="o">=</span> <span class="nx">message</span><span class="p">;</span>
+
+  <span class="nx">execFile</span><span class="p">(</span><span class="nx">cmd</span><span class="p">,</span> <span class="nx">args</span><span class="p">,</span> <span class="p">(</span><span class="nx">_error</span><span class="p">,</span> <span class="nx">stdout</span><span class="p">,</span> <span class="nx">_stderr</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">parentPort</span><span class="p">.</span><span class="nx">postMessage</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">stdout</span><span class="p">]</span><span class="p">)</span><span class="p">;</span>
+  <span class="p">}</span><span class="p">)</span><span class="p">;</span>
+<span class="p">}</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>And here&rsquo;s our <code>worker-threads/index.js</code>. We create 8 worker threads. When we
+want to handle a request we send a message to a thread to make the spawn call
+and send back the output. Once we get the response back, we respond to the http
+request.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">import</span> <span class="nx">assert</span> <span class="nx">from</span> <span class="s2">&#34;node:assert&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">EventEmitter</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:events&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="p">{</span> <span class="nx">Worker</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:worker_threads&#34;</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">newWorker</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Worker</span><span class="p">(</span><span class="s2">&#34;./worker-threads/worker.js&#34;</span><span class="p">)</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">ee</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">EventEmitter</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+  <span class="c1">// Emit messages from the worker to the EventEmitter by id.
+</span><span class="c1"></span>  <span class="nx">worker</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">msg</span><span class="p">]</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">msg</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
+  <span class="k">return</span> <span class="p">{</span> <span class="nx">worker</span><span class="p">,</span> <span class="nx">ee</span> <span class="p">}</span><span class="p">;</span>
+<span class="p">}</span><span class="p">;</span>
+
+<span class="c1">// Spawn 8 worker threads.
+</span><span class="c1"></span><span class="kr">const</span> <span class="nx">workers</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="p">{</span> <span class="nx">length</span><span class="o">:</span> <span class="mi">8</span> <span class="p">}</span><span class="p">,</span> <span class="nx">newWorker</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">randomWorker</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">workers</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">(</span><span class="p">)</span> <span class="o">*</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="p">]</span><span class="p">;</span>
+
+<span class="kr">const</span> <span class="nx">spawnInWorker</span> <span class="o">=</span> <span class="nx">async</span> <span class="p">(</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nx">randomWorker</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">id</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+  <span class="c1">// Send and wait for our response.
+</span><span class="c1"></span>  <span class="nx">worker</span><span class="p">.</span><span class="nx">worker</span><span class="p">.</span><span class="nx">postMessage</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="s2">&#34;hi&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">;</span>
+  <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="p">(</span><span class="nx">resolve</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="nx">worker</span><span class="p">.</span><span class="nx">ee</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+      <span class="nx">resolve</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span><span class="p">;</span>
+    <span class="p">}</span><span class="p">)</span><span class="p">;</span>
+  <span class="p">}</span><span class="p">)</span><span class="p">;</span>
+<span class="p">}</span><span class="p">;</span>
+
+<span class="nx">http</span>
+  <span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="nx">async</span> <span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">resp</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">spawnInWorker</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
+    <span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">resp</span><span class="p">,</span> <span class="s2">&#34;hi\n&#34;</span><span class="p">)</span><span class="p">;</span> <span class="c1">// no cheating!
+</span><span class="c1"></span>    <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span><span class="p">;</span>
+  <span class="p">}</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>Results!:</p>
+<table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>426</td>
+<td><code>node worker-threads/index.js</code></td>
+</tr>
+<tr>
+<td>Deno</td>
+<td>3,601</td>
+<td><code>deno run --allow-all worker-threads/index.js</code></td>
+</tr>
+<tr>
+<td>Bun</td>
+<td>2,898</td>
+<td><code>bun run worker-threads/index.js</code></td>
+</tr>
+</tbody>
+</table>
+<p>Node is slower! Ok, so presumably we are not bypassing Node&rsquo;s bottleneck by
+using threads. So we&rsquo;re doing the same work with the added overhead of
+coordinating with the worker threads. Bummer.</p>
+<p>Deno loves this, and Bun likes it a little more. Generally, it&rsquo;s nice to see
+that Bun and Deno don&rsquo;t see much of an improvement here. They&rsquo;re already doing a
+good job of keeping the sycall overhead off of the execution thread.</p>
+<p>Onward.</p>
+<h2 id="move-spawn-calls-to-child-processes">Move Spawn Calls to Child Processes<a href="#move-spawn-calls-to-child-processes" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>If threads are not going to work, let&rsquo;s use child processes to do the work.</p>
+<p>This is quite easy. We simply swap out the worker threads for processes spawned
+by <code>child_process.fork</code> and change how we send and receive messages.</p>
+<div class="highlight"><pre class="chroma"><code class="language-diff" data-lang="diff">$ git diff --unified=1 --no-index ./worker-threads/ ./child-process/
+<span class="gh">diff --git a/./worker-threads/index.js b/./child-process/index.js
+</span><span class="gh"></span><span class="gh">index 52a93fe..0ed206e 100644
+</span><span class="gh"></span><span class="gd">--- a/./worker-threads/index.js
+</span><span class="gd"></span><span class="gi">+++ b/./child-process/index.js
+</span><span class="gi"></span><span class="gu">@@ -3,6 +3,6 @@ import http from &#34;node:http&#34;;
+</span><span class="gu"></span> import { EventEmitter } from &#34;node:events&#34;;
+<span class="gd">-import { Worker } from &#34;node:worker_threads&#34;;
+</span><span class="gd"></span><span class="gi">+import { fork } from &#34;node:child_process&#34;;
+</span><span class="gi"></span>
+ const newWorker = () =&gt; {
+<span class="gd">-  const worker = new Worker(&#34;./worker-threads/worker.js&#34;);
+</span><span class="gd"></span><span class="gi">+  const worker = fork(&#34;./child-process/worker.js&#34;);
+</span><span class="gi"></span>   const ee = new EventEmitter();
+<span class="gu">@@ -21,3 +21,3 @@ const spawnInWorker = async () =&gt; {
+</span><span class="gu"></span>   // Send and wait for our response.
+<span class="gd">-  worker.worker.postMessage([id, &#34;echo&#34;, &#34;hi&#34;]);
+</span><span class="gd"></span><span class="gi">+  worker.worker.send([id, &#34;echo&#34;, &#34;hi&#34;]);
+</span><span class="gi"></span>   return new Promise((resolve) =&gt; {
+<span class="gh">diff --git a/./worker-threads/worker.js b/./child-process/worker.js
+</span><span class="gh"></span><span class="gh">index 5f025ca..9b3fcf5 100644
+</span><span class="gh"></span><span class="gd">--- a/./worker-threads/worker.js
+</span><span class="gd"></span><span class="gi">+++ b/./child-process/worker.js
+</span><span class="gi"></span><span class="gu">@@ -1,5 +1,4 @@
+</span><span class="gu"></span> import { execFile } from &#34;node:child_process&#34;;
+<span class="gd">-import { parentPort } from &#34;node:worker_threads&#34;;
+</span><span class="gd"></span>
+<span class="gd">-parentPort.on(&#34;message&#34;, (message) =&gt; {
+</span><span class="gd"></span><span class="gi">+process.on(&#34;message&#34;, (message) =&gt; {
+</span><span class="gi"></span>   const [id, cmd, ...args] = message;
+<span class="gu">@@ -7,3 +6,3 @@ parentPort.on(&#34;message&#34;, (message) =&gt; {
+</span><span class="gu"></span>   execFile(cmd, args, (_error, stdout, _stderr) =&gt; {
+<span class="gd">-    parentPort.postMessage([id, stdout]);
+</span><span class="gd"></span><span class="gi">+    process.send([id, stdout]);
+</span><span class="gi"></span>   });
+</code></pre></div><p>Nice. And the results:</p>
+<table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>2,209</td>
+<td><code>node child-process/index.js</code></td>
+</tr>
+<tr>
+<td>Deno</td>
+<td>3,800</td>
+<td><code>deno run --allow-all child-process/index.js</code></td>
+</tr>
+<tr>
+<td>Bun</td>
+<td>3,871</td>
+<td><code>bun run worker-threads/index.js</code></td>
+</tr>
+</tbody>
+</table>
+<p>Good speedups all around. I am very curious what the bottleneck is that is
+preventing Deno and Bun from getting to Rust/Go speeds. Please let me know if
+you have suggestions for how to dig into that!</p>
+<p>One fun thing here is that we can mix Node and Bun. Bun implements the Node IPC
+protocol, so we can configure Node to spawn Bun child processes. Let&rsquo;s try that.</p>
+<p>Update the <code>fork</code> arguments to use the <code>bun</code> binary instead of Node.</p>
+<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nx">fork</span><span class="p">(</span><span class="s2">&#34;./child-process/worker.js&#34;</span><span class="p">,</span> <span class="p">{</span>
+  <span class="nx">execPath</span><span class="o">:</span> <span class="s2">&#34;/home/maxm/.bun/bin/bun&#34;</span><span class="p">,</span>
+<span class="p">}</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node + Bun</td>
+<td>3,853</td>
+<td><code>node child-process/index.js</code></td>
+</tr>
+</tbody>
+</table>
+<p>Hah, cool. I get to use Node on the main thread and leverage Bun&rsquo;s performance.</p>
+<h2 id="stdio">Stdio<a href="#stdio" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>Logs. The previous implementations assume there will be minimal log output, but
+what if there&rsquo;s a lot? We could send the logs using <code>process.send</code>, but that
+will be quite expensive if our output bytes are serialized to JSON.</p>
+<p>I spent a lot of time in this rabbit hole. Here&rsquo;s a rough summary of the things
+I tried:</p>
+<ol>
+<li>Passing file descriptors between processes. Like passing the stdout/err back
+up to the parent process. I tried this a few different ways but couldn&rsquo;t get
+it working so that we&rsquo;d always capture all the bytes written.</li>
+<li>Just using <code>process.send</code>. This works, but is only performant if you use
+<code>serialization: &quot;advanced&quot;</code> so that you can send bytes without serialization.
+This doesn&rsquo;t work in Deno and Bun.</li>
+<li>I created a pair of <a href="https://man7.org/linux/man-pages/man7/unix.7.html">Abstract
+Sockets</a> for each spawn
+call and sent the logs over the socket. This spends too much time setting up
+the sockets to be worth it.</li>
+</ol>
+<p>Also abstract sockets are crazy. I&rsquo;m familiar with <a href="https://en.wikipedia.org/wiki/Unix_domain_socket">Unix Domain
+Sockets</a> where you have a file
+called (eg) <code>something.sock</code> and you can listen on it and connect to it just
+like a network address. Turns out, that if you use a Unix socket and the
+filename starts with a null byte, like <code>\0foo</code> the socket will not exist on the
+filesystem and it&rsquo;ll be automatically removed when no longer used. Weird! Cool!</p>
+<p>After all this testing I have two approaches that work pretty well.</p>
+<ol>
+<li>Set up a pool of processes with <code>.fork()</code> and also set up a separate abstract
+socket for each one to send logs.</li>
+<li>Simply use <code>process.send</code> but use <code>serialization: &quot;advanced&quot;</code>.</li>
+</ol>
+<p>Let&rsquo;s see how those work out.</p>
+<p>We&rsquo;ll need something that outputs a lot of logs. So I grabbed the <code>main.c</code> file
+from Sqlite&rsquo;s source. This is a 163Kb file. We&rsquo;ll run the command <code>cat main.c</code>
+to print it out.</p>
+<p>Here&rsquo;s our <code>baseline.js</code> again with that update:</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
+<span class="nx">http</span>
+  <span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;cat&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;main.c&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>I&rsquo;ve updated the Go and Rust code as well. Let&rsquo;s see how they do:</p>
+<table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>374</td>
+<td><code>node baseline.js</code></td>
+</tr>
+<tr>
+<td>Deno</td>
+<td>667</td>
+<td><code>deno run --allow-all baseline.js</code></td>
+</tr>
+<tr>
+<td>Bun</td>
+<td>1,374</td>
+<td><code>bun run baseline.js</code></td>
+</tr>
+<tr>
+<td>Go</td>
+<td>2,757</td>
+<td><code>go run go/main.go</code></td>
+</tr>
+<tr>
+<td>Rust (tokio)</td>
+<td>3,535</td>
+<td><code>cd rust &amp;&amp; cargo run --release</code></td>
+</tr>
+</tbody>
+</table>
+<p>Fascinating. It&rsquo;s cool to see Bun and Rust pull ahead here compared to the
+previous benchmarks. Node is still slow very slow and Deno is surprisingly
+unhappy with this workload.</p>
+<p>Next let&rsquo;s try my abstract socket communication channel implementation. It&rsquo;s
+getting quite complex so I won&rsquo;t post it here, but you can <a href="https://github.com/maxmcd/process-per-request/tree/7528cd8045c998c8b5451961e0818473b4a81860/child-process-comm-channel">take a look
+here</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>1,336</td>
+<td><code>node child-process-comm-channel/index.js</code></td>
+</tr>
+<tr>
+<td>Node + Bun</td>
+<td>2,635</td>
+<td><code>node child-process-comm-channel/index.js</code></td>
+</tr>
+<tr>
+<td>Deno</td>
+<td>862</td>
+<td><code>deno run --allow-all child-process-comm-channel/index.js</code></td>
+</tr>
+<tr>
+<td>Bun</td>
+<td>1,833</td>
+<td><code>bun child-process-comm-channel/index.js</code></td>
+</tr>
+</tbody>
+</table>
+<p>Haha. I had seen some random benchmark results where Node+Bun was faster than
+bun alone, but it never netted out in the final runs.</p>
+<p>The Deno results are quite perplexing. In implementing this example I had a
+&ldquo;bug&rdquo; where I was buffering the response as a string. Here&rsquo;s the diff of me fixing it:</p>
+<div class="highlight"><pre class="chroma"><code class="language-diff" data-lang="diff"><span class="gu">@@ -88,9 +88,8 @@ const spawnInWorker = async (res) =&gt; {
+</span><span class="gu"></span>   worker.child.send([id, &#34;spawn&#34;, [&#34;cat&#34;, [&#34;main.c&#34;]]]);
+<span class="gd">-  let resp = &#34;&#34;;
+</span><span class="gd"></span>   worker.ee.on(id, (msg, data) =&gt; {
+     if (msg == MessageType.STDOUT) {
+<span class="gd">-      resp += data.toString();
+</span><span class="gd"></span><span class="gi">+      res.write(data);
+</span><span class="gi"></span>     }
+     if (msg == MessageType.STDOUT_CLOSE) {
+<span class="gd">-      res.end(resp);
+</span><span class="gd"></span><span class="gi">+      res.end();
+</span><span class="gi"></span>       worker.requests -= 1;
+</code></pre></div><p>Deno performs far better before this fix! Node and Bun both perform better once
+the string buffer is removed.</p>
+<table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Deno + string buffer</td>
+<td>1,453</td>
+<td><code>deno run --allow-all child-process-comm-channel/index.js</code></td>
+</tr>
+</tbody>
+</table>
+<p>Weird!</p>
+<p>Finally, here is the <code>process.send</code> implementation. It is fast and also
+incredibly simple to implement. I am a little unexcited about this solution
+because it is slower than I&rsquo;d like, doesn&rsquo;t support Deno and Bun, and there&rsquo;s
+very little space to improve things. However, this implementation is deeply
+practical and easy to understand, which is beautiful. Here&rsquo;s the source of
+<code>worker.js</code>, the rest <a href="https://github.com/maxmcd/process-per-request/tree/7528cd8045c998c8b5451961e0818473b4a81860/child-process-send-logs">is here</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+<span class="kr">import</span> <span class="nx">process</span> <span class="nx">from</span> <span class="s2">&#34;node:process&#34;</span><span class="p">;</span>
+
+<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="kr">const</span> <span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">,</span> <span class="p">.</span><span class="p">.</span><span class="p">.</span><span class="nx">args</span><span class="p">]</span> <span class="o">=</span> <span class="nx">message</span><span class="p">;</span>
+  <span class="kr">const</span> <span class="nx">cp</span> <span class="o">=</span> <span class="nx">spawn</span><span class="p">(</span><span class="nx">cmd</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span><span class="p">;</span>
+  <span class="nx">cp</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;data&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;stdout&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
+  <span class="nx">cp</span><span class="p">.</span><span class="nx">stderr</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;data&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;stderr&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
+  <span class="nx">cp</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;close&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">code</span><span class="p">,</span> <span class="nx">signal</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;exit&#34;</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">signal</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
+<span class="p">}</span><span class="p">)</span><span class="p">;</span>
+</code></pre></div><table>
+<thead>
+<tr>
+<th>Language/Runtime</th>
+<th>Req/s</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Node</td>
+<td>1,179</td>
+<td><code>node child-process-send-logs/index.js</code></td>
+</tr>
+</tbody>
+</table>
+<p>Very nice, probably the practical choice if you are only targeting Node.</p>
+<h2 id="load-balancing">Load Balancing<a href="#load-balancing" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>A quick note on load balancing between processes. Both Go and Rust <a href="https://rakyll.org/scheduler/">have
+complicated schedulers</a> that <a href="https://tokio.rs/blog/2019-10-scheduler">distribute work
+efficiently</a>. So far, when picking a
+worker I&rsquo;ve been grabbing a random one:</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">const</span> <span class="nx">workers</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="p">{</span> <span class="nx">length</span>: <span class="kt">8</span> <span class="p">}</span><span class="p">,</span> <span class="nx">newWorker</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">randomWorker</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">workers</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">(</span><span class="p">)</span> <span class="o">*</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="p">]</span><span class="p">;</span>
+</code></pre></div><p>However, we can also implement round-robin, and least-connections style load
+balancing. <a href="https://samwho.dev/load-balancing/">See a wonderful writeup on those
+here</a>.</p>
+<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">const</span> <span class="nx">pickWorkerInOrder</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">workers</span><span class="p">[</span><span class="p">(</span><span class="nx">count</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span><span class="p">;</span>
+<span class="kr">const</span> <span class="nx">pickWorkerWithLeastRequests</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span>
+  <span class="nx">workers</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="p">(</span><span class="nx">selectedWorker</span><span class="p">,</span> <span class="nx">worker</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span>
+    <span class="nx">worker</span><span class="p">.</span><span class="nx">requests</span> <span class="o">&lt;</span> <span class="nx">selectedWorker</span><span class="p">.</span><span class="nx">requests</span> <span class="o">?</span> <span class="nx">worker</span> : <span class="kt">selectedWorker</span>
+  <span class="p">)</span><span class="p">;</span>
+</code></pre></div><p>Sadly I didn&rsquo;t see consistent performance improvements with these approaches.
+They all perform about the same. Maybe more typical workloads where the spawn
+calls are not entirely uniform would benefit more from these changes.</p>
+<h2 id="library">Library?<a href="#library" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>It seems possible, given all of these findings, to implement a <code>child_process</code>
+library that implements the same API surface as <code>node:child_process</code> but farms
+the spawn calls out to a process pool. Maybe I will write that, or maybe you
+will. Please <a href="https://x.com/mxmcd">let me know</a> if there&rsquo;s interest.</p>
+<h2 id="final-thoughts">Final Thoughts<a href="#final-thoughts" class="anchor" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3"></path><line x1="8" y1="12" x2="16" y2="12"></line></svg></a></h2>
+<p>We&rsquo;re sadly at the limits of my knowledge/experimentation, but I wonder what
+could unlock more performance.</p>
+<p>It was really fun to see improved performance and what didn&rsquo;t, and the random
+moments where Deno/Bun/Node were affected differently.</p>
+<p>Using Node and Bun together is a fun pattern and it&rsquo;s nice to see it lead to
+such a speedup. Please support Node&rsquo;s IPC Deno!</p>
+<p>Let me know if there&rsquo;s anything else I should experiment with here! See you next
+time :)</p>
+
+			</div>
+			<hr class="post-end">
+			<footer class="post-info">
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-feather"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>Max McDonnell</p>
+				<p>
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag meta-icon"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7" y2="7"></line></svg><span class="tag"><a href="https://maxmcd.com/tags/node">node</a></span><span class="tag"><a href="https://maxmcd.com/tags/js">js</a></span><span class="tag"><a href="https://maxmcd.com/tags/performance">performance</a></span><span class="tag"><a href="https://maxmcd.com/tags/bun">bun</a></span><span class="tag"><a href="https://maxmcd.com/tags/go">go</a></span><span class="tag"><a href="https://maxmcd.com/tags/deno">deno</a></span>
+				</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>2328 Words</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>2024-07-12 00:00 UTC</p>
+				<p><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"></circle><line x1="1.05" y1="12" x2="7" y2="12"></line><line x1="17.01" y1="12" x2="22.96" y2="12"></line></svg><a href="https://github.com/maxmcd/blog/commit/c24e7e8f73b01a15da8ec8e44f79e35e84a42e02" target="_blank" rel="noopener">c24e7e8</a> @ 2024-07-19</p>
+			</footer>
+		</article>
+		<aside id="toc">
+			<div class="toc-title">Table of Contents</div>
+			<nav id="TableOfContents">
+  <ul>
+    <li><a href="#node-cluster-module">Node cluster Module</a></li>
+    <li><a href="#move-the-spawn-calls-to-worker-threads">Move The Spawn Calls To Worker Threads</a></li>
+    <li><a href="#move-spawn-calls-to-child-processes">Move Spawn Calls to Child Processes</a></li>
+    <li><a href="#stdio">Stdio</a></li>
+    <li><a href="#load-balancing">Load Balancing</a></li>
+    <li><a href="#library">Library?</a></li>
+    <li><a href="#final-thoughts">Final Thoughts</a></li>
+  </ul>
+</nav>
+		</aside>
+		<div class="post-nav thin">
+			<a class="prev-post" href="https://maxmcd.com/posts/running-go-on-val-town/">
+				<span class="post-nav-label"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>&nbsp;Older</span><br><span>Running Go on Val Town</span>
+			</a>
+		</div>
+		<div id="comments" class="thin">
+</div>
+	</main>
+
+	<footer id="site-footer" class="section-inner thin animated fadeIn faster">
+		<p>
+			<a href="https://maxmcd.com/posts/index.xml" target="_blank" title="rss">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-rss"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg>
+			</a>
+		</p>
+	</footer>
+
+
+
+	<script src="https://maxmcd.com/js/bundle.min.4a9a0ac3d2217822c7865b4161e6c2a71de1d70492264337755427898dd718f6.js" integrity="sha256-SpoKw9IheCLHhltBYebCpx3h1wSSJkM3dVQniY3XGPY=" crossorigin="anonymous"></script>
+	
+</body>
+
+</html>

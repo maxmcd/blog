@@ -7,15 +7,24 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Wed, 29 May 2024 06:21:13 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 12 Jul 2024 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.com/tags/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
+      <title>bun</title>
+      <link>https://maxmcd.com/tags/bun/</link>
+      <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/bun/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>deno</title>
       <link>https://maxmcd.com/tags/deno/</link>
-      <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
+      <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
       
       <guid>https://maxmcd.com/tags/deno/</guid>
       <description></description>
@@ -24,9 +33,36 @@
     <item>
       <title>go</title>
       <link>https://maxmcd.com/tags/go/</link>
-      <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
+      <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
       
       <guid>https://maxmcd.com/tags/go/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>js</title>
+      <link>https://maxmcd.com/tags/js/</link>
+      <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/js/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>node</title>
+      <link>https://maxmcd.com/tags/node/</link>
+      <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/node/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>performance</title>
+      <link>https://maxmcd.com/tags/performance/</link>
+      <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/tags/performance/</guid>
       <description></description>
     </item>
     

@@ -7,10 +7,20 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Wed, 29 May 2024 06:21:13 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 12 Jul 2024 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="https://maxmcd.com/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Can We Improve Process Per Request Performance in Node</title>
+      <link>https://maxmcd.com/posts/process-per-request-performance/</link>
+      <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
+      
+      <guid>https://maxmcd.com/posts/process-per-request-performance/</guid>
+      <description>table code { background-color: initial } table td, table th { padding: 0.5rem }  How fast can an HTTP server in Node run if we spawn a process for every request?
+import { spawn } from &amp;#34;node:child_process&amp;#34;; import http from &amp;#34;node:http&amp;#34;; http .createServer((req, res) =&amp;gt; spawn(&amp;#34;echo&amp;#34;, [&amp;#34;hi&amp;#34;]).stdout.pipe(res)) .listen(8001); You should avoid spawning a new process for every HTTP request if at all possible. Creating a new process or thread is expensive and could easily become your core bottleneck.</description>
+    </item>
     
     <item>
       <title>Running Go on Val Town</title>
