@@ -1,36 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>starlark on Max McDonnell</title>
+    <title>Starlark on Max McDonnell</title>
     <link>https://maxmcd.com/tags/starlark/</link>
-    <description>Recent content in starlark on Max McDonnell</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Starlark on Max McDonnell</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Sun, 14 Nov 2021 21:21:13 +0000</lastBuildDate>
-    
-	<atom:link href="https://maxmcd.com/tags/starlark/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Mon, 15 Nov 2021 15:30:26 -0500</lastBuildDate>
+    <atom:link href="https://maxmcd.com/tags/starlark/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Bramble: A Purely Functional Build System and Package Manager</title>
       <link>https://maxmcd.com/posts/bramble/</link>
       <pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/bramble/</guid>
-      <description>About a year and a half ago I decided to start working on a build system inspired by Nix called Bramble. Andrew Chambers had launched hermes and I was messing around with starlark-go a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.
-Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.</description>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/maxmcd/bramble/raw/main/notes/animated.svg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;About a year and a half ago I decided to start working on a build system inspired by Nix called &lt;a href=&#34;https://github.com/maxmcd/bramble&#34;&gt;Bramble&lt;/a&gt;. Andrew Chambers had launched &lt;a href=&#34;https://github.com/andrewchambers/hermes&#34;&gt;hermes&lt;/a&gt; and I was messing around with &lt;a href=&#34;https://github.com/google/starlark-go&#34;&gt;starlark-go&lt;/a&gt; a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.&lt;/p&gt;&#xA;&lt;p&gt;Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Star: Go but in Python?</title>
       <link>https://maxmcd.com/posts/star/</link>
       <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/star/</guid>
-      <description>tl:dr star is a python(ish) programming environment that lets you call Go library functions. click down to the repl if you&amp;rsquo;d just like to play around
-Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&amp;rsquo;s not turing complete (no unbounded loops), it doesn&amp;rsquo;t have classes or higher level abstractions, it&amp;rsquo;s also deterministic and is somewhat safe to run untrusted user input.</description>
+      <description>&lt;p&gt;&lt;em&gt;&lt;strong&gt;tl:dr&lt;/strong&gt; &lt;a href=&#34;https://github.com/embly/star&#34;&gt;&lt;strong&gt;star&lt;/strong&gt;&lt;/a&gt; is a python(ish) programming environment that lets you call Go library functions. &lt;a href=&#34;#repl&#34;&gt;click down to the repl&lt;/a&gt; if you&amp;rsquo;d just like to play around&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://github.com/bazelbuild/starlark&#34;&gt;Starlark&lt;/a&gt; is Google&amp;rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&amp;rsquo;s not turing complete (no unbounded loops), it doesn&amp;rsquo;t have classes or higher level abstractions, it&amp;rsquo;s also deterministic and is somewhat safe to run untrusted user input.&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

@@ -4,139 +4,108 @@
     <title>Tags on Max McDonnell</title>
     <link>https://maxmcd.com/tags/</link>
     <description>Recent content in Tags on Max McDonnell</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Fri, 12 Jul 2024 00:00:00 +0000</lastBuildDate>
-    
-	<atom:link href="https://maxmcd.com/tags/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Fri, 19 Jul 2024 10:13:20 -0400</lastBuildDate>
+    <atom:link href="https://maxmcd.com/tags/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>bun</title>
+      <title>Bun</title>
       <link>https://maxmcd.com/tags/bun/</link>
       <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/bun/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>deno</title>
+      <title>Deno</title>
       <link>https://maxmcd.com/tags/deno/</link>
       <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/deno/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>go</title>
+      <title>Go</title>
       <link>https://maxmcd.com/tags/go/</link>
       <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/go/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>js</title>
+      <title>Js</title>
       <link>https://maxmcd.com/tags/js/</link>
       <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/js/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>node</title>
+      <title>Node</title>
       <link>https://maxmcd.com/tags/node/</link>
       <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/node/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>performance</title>
+      <title>Performance</title>
       <link>https://maxmcd.com/tags/performance/</link>
       <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/performance/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>val.town</title>
+      <title>Val.town</title>
       <link>https://maxmcd.com/tags/val.town/</link>
       <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/val.town/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>wasm</title>
+      <title>Wasm</title>
       <link>https://maxmcd.com/tags/wasm/</link>
       <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/wasm/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>nix</title>
+      <title>Nix</title>
       <link>https://maxmcd.com/tags/nix/</link>
       <pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/nix/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>starlark</title>
+      <title>Starlark</title>
       <link>https://maxmcd.com/tags/starlark/</link>
       <pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/starlark/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>bazel</title>
+      <title>Bazel</title>
       <link>https://maxmcd.com/tags/bazel/</link>
       <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/bazel/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>build</title>
+      <title>Build</title>
       <link>https://maxmcd.com/tags/build/</link>
       <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/build/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>guix</title>
+      <title>Guix</title>
       <link>https://maxmcd.com/tags/guix/</link>
       <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/guix/</guid>
       <description></description>
     </item>
-    
     <item>
-      <title>star</title>
+      <title>Star</title>
       <link>https://maxmcd.com/tags/star/</link>
       <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/tags/star/</guid>
       <description></description>
     </item>
-    
   </channel>
 </rss>

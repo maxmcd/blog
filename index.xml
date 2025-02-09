@@ -4,72 +4,52 @@
     <title>Max McDonnell</title>
     <link>https://maxmcd.com/</link>
     <description>Recent content on Max McDonnell</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Fri, 12 Jul 2024 00:00:00 +0000</lastBuildDate>
-    
-	<atom:link href="https://maxmcd.com/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Fri, 19 Jul 2024 10:13:20 -0400</lastBuildDate>
+    <atom:link href="https://maxmcd.com/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Can We Improve Process Per Request Performance in Node</title>
       <link>https://maxmcd.com/posts/process-per-request-performance/</link>
       <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/process-per-request-performance/</guid>
-      <description>table code { background-color: initial } table td, table th { padding: 0.5rem }  How fast can an HTTP server in Node run if we spawn a process for every request?
-import { spawn } from &amp;#34;node:child_process&amp;#34;; import http from &amp;#34;node:http&amp;#34;; http .createServer((req, res) =&amp;gt; spawn(&amp;#34;echo&amp;#34;, [&amp;#34;hi&amp;#34;]).stdout.pipe(res)) .listen(8001); You should avoid spawning a new process for every HTTP request if at all possible. Creating a new process or thread is expensive and could easily become your core bottleneck.</description>
+      <description>&lt;style&gt;&#xA;    table code { background-color: initial }&#xA;    table td, table th { padding: 0.5rem }&#xA;&lt;/style&gt;&#xA;&lt;p&gt;How fast can an HTTP server in Node run if we spawn a process for every request?&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kr&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;spawn&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;node:child_process&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kr&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;node:http&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;createServer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;((&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;res&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;spawn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;echo&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;hi&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]).&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;stdout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;pipe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;res&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;listen&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;8001&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You should avoid spawning a new process for every HTTP request if at all&#xA;possible. Creating a new process or thread is expensive and could easily become&#xA;your core bottleneck. At &lt;a href=&#34;https://val.town&#34;&gt;Val Town&lt;/a&gt; there are many request&#xA;types where we spawn a new process to handle the request. While we&amp;rsquo;re working to&#xA;reduce this, it is likely that we&amp;rsquo;ll always have some requests that spawn a&#xA;process, and we&amp;rsquo;d like them to be fast.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Running Go on Val Town</title>
       <link>https://maxmcd.com/posts/running-go-on-val-town/</link>
       <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/running-go-on-val-town/</guid>
-      <description>Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?
- If you want to skip all this and just run Go on Val Town you can follow the instructions here.</description>
+      <description>&lt;p&gt;&lt;img src=&#34;https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public&#34; alt=&#34;image.png&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on &lt;a href=&#34;https://val.town&#34;&gt;Val Town&lt;/a&gt; and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;If you want to skip all this and just run Go on Val Town you can &lt;a href=&#34;https://www.val.town/v/maxm/compileAndUploadTinygoWasm&#34;&gt;follow the instructions here&lt;/a&gt;. There&amp;rsquo;s also a &lt;a href=&#34;https://www.val.town/v/maxm/tinygoWasmHelloWorld&#34;&gt;basic &amp;ldquo;Hello World&amp;rdquo;&lt;/a&gt; example, and another that&amp;rsquo;s &lt;a href=&#34;https://www.val.town/v/maxm/tinygoHttpExample&#34;&gt;much more fun and complex&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Bramble: A Purely Functional Build System and Package Manager</title>
       <link>https://maxmcd.com/posts/bramble/</link>
       <pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/bramble/</guid>
-      <description>About a year and a half ago I decided to start working on a build system inspired by Nix called Bramble. Andrew Chambers had launched hermes and I was messing around with starlark-go a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.
-Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.</description>
+      <description>&lt;p&gt;&lt;img src=&#34;https://github.com/maxmcd/bramble/raw/main/notes/animated.svg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;About a year and a half ago I decided to start working on a build system inspired by Nix called &lt;a href=&#34;https://github.com/maxmcd/bramble&#34;&gt;Bramble&lt;/a&gt;. Andrew Chambers had launched &lt;a href=&#34;https://github.com/andrewchambers/hermes&#34;&gt;hermes&lt;/a&gt; and I was messing around with &lt;a href=&#34;https://github.com/google/starlark-go&#34;&gt;starlark-go&lt;/a&gt; a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.&lt;/p&gt;&#xA;&lt;p&gt;Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Strategies for Binary Relocation In Functional Build Systems</title>
       <link>https://maxmcd.com/posts/strategies-for-binary-relocation/</link>
       <pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/strategies-for-binary-relocation/</guid>
-      <description>I&amp;rsquo;m currently writing a toy Nix/Guix called Bramble to learn more about the inner workings of both systems. One of the features that I wanted to include in my version was &amp;ldquo;binary relocation&amp;rdquo;.
-Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a simple nix Derivation you&amp;rsquo;ll see that these paths are hardcoded directly in the file.</description>
+      <description>&lt;p&gt;I&amp;rsquo;m currently writing a toy Nix/Guix called &lt;a href=&#34;github.com/maxmcd/bramble&#34;&gt;Bramble&lt;/a&gt; to learn more about the inner workings of both systems. One of the features that I wanted to include in my version was &amp;ldquo;binary relocation&amp;rdquo;.&lt;/p&gt;&#xA;&lt;p&gt;Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a &lt;a href=&#34;https://gist.github.com/maxmcd/d98710a0e26daaff37c565da599f5d76&#34;&gt;simple nix Derivation&lt;/a&gt; you&amp;rsquo;ll see that these paths are hardcoded directly in the file. This is an important component of Nix. Instead of searching for the default shared libraries on a system nix-built binaries are patched to only include the specific libraries they depend on. This helps ensure correctness but also means that the binary must know exactly where to look for the shared lib. Hardcoding a library path to a fixed known location like &lt;code&gt;/nix/store/zqi5prhap0qh6r4nkghnibbmkgn7sczf-libogg-1.3.4/lib/&lt;/code&gt; is an elegant way to get this done.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title>Star: Go but in Python?</title>
       <link>https://maxmcd.com/posts/star/</link>
       <pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/star/</guid>
-      <description>tl:dr star is a python(ish) programming environment that lets you call Go library functions. click down to the repl if you&amp;rsquo;d just like to play around
-Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&amp;rsquo;s not turing complete (no unbounded loops), it doesn&amp;rsquo;t have classes or higher level abstractions, it&amp;rsquo;s also deterministic and is somewhat safe to run untrusted user input.</description>
+      <description>&lt;p&gt;&lt;em&gt;&lt;strong&gt;tl:dr&lt;/strong&gt; &lt;a href=&#34;https://github.com/embly/star&#34;&gt;&lt;strong&gt;star&lt;/strong&gt;&lt;/a&gt; is a python(ish) programming environment that lets you call Go library functions. &lt;a href=&#34;#repl&#34;&gt;click down to the repl&lt;/a&gt; if you&amp;rsquo;d just like to play around&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;&lt;a href=&#34;https://github.com/bazelbuild/starlark&#34;&gt;Starlark&lt;/a&gt; is Google&amp;rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&amp;rsquo;s not turing complete (no unbounded loops), it doesn&amp;rsquo;t have classes or higher level abstractions, it&amp;rsquo;s also deterministic and is somewhat safe to run untrusted user input.&lt;/p&gt;</description>
     </item>
-    
     <item>
       <title></title>
       <link>https://maxmcd.com/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/about/</guid>
-      <description>max.t.mcdonnell at gmail</description>
+      <description>&lt;p&gt;max.t.mcdonnell at gmail&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

@@ -15,19 +15,33 @@
 			<pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
 			
 			<guid>https://maxmcd.com/posts/process-per-request-performance/</guid>
-			<description>table code { background-color: initial } table td, table th { padding: 0.5rem }  How fast can an HTTP server in Node run if we spawn a process for every request?
-import { spawn } from &amp;#34;node:child_process&amp;#34;; import http from &amp;#34;node:http&amp;#34;; http .createServer((req, res) =&amp;gt; spawn(&amp;#34;echo&amp;#34;, [&amp;#34;hi&amp;#34;]).stdout.pipe(res)) .listen(8001); You should avoid spawning a new process for every HTTP request if at all possible. Creating a new process or thread is expensive and could easily become your core bottleneck.</description>
+			<description>&lt;style&gt;
+    table code { background-color: initial }
+    table td, table th { padding: 0.5rem }
+&lt;/style&gt;
+&lt;p&gt;How fast can an HTTP server in Node run if we spawn a process for every request?&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kr&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;spawn&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;node:child_process&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kr&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;node:http&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;createServer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;((&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;res&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;spawn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;echo&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;hi&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]).&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;stdout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;pipe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;res&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;listen&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;8001&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You should avoid spawning a new process for every HTTP request if at all
+possible. Creating a new process or thread is expensive and could easily become
+your core bottleneck. At &lt;a href=&#34;https://val.town&#34;&gt;Val Town&lt;/a&gt; there are many request
+types where we spawn a new process to handle the request. While we&amp;rsquo;re working to
+reduce this, it is likely that we&amp;rsquo;ll always have some requests that spawn a
+process, and we&amp;rsquo;d like them to be fast.&lt;/p&gt;</description>
 			<content type="html"><![CDATA[<style>
     table code { background-color: initial }
     table td, table th { padding: 0.5rem }
 </style>
 <p>How fast can an HTTP server in Node run if we spawn a process for every request?</p>
-<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
-<span class="nx">http</span>
-<span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;hi&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span><span class="p">)</span>
-<span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>You should avoid spawning a new process for every HTTP request if at all
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">http</span>
+</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="nx">createServer</span><span class="p">((</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;hi&#34;</span><span class="p">]).</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">);</span>
+</span></span></code></pre></div><p>You should avoid spawning a new process for every HTTP request if at all
 possible. Creating a new process or thread is expensive and could easily become
 your core bottleneck. At <a href="https://val.town">Val Town</a> there are many request
 types where we spawn a new process to handle the request. While we&rsquo;re working to
@@ -52,40 +66,40 @@ and the Rust source is
 <a href="https://github.com/maxmcd/process-per-request/blob/0a6442f656fe7bc8f6c61ef2c5fdef65c6afa0f1/rust/src/main.rs">here</a>.</p>
 <p>Here are the results:</p>
 <table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Node</td>
-<td>651</td>
-<td><code>node baseline.js</code></td>
-</tr>
-<tr>
-<td>Deno</td>
-<td>2,290</td>
-<td><code>deno run --allow-all baseline.js</code></td>
-</tr>
-<tr>
-<td>Bun</td>
-<td>2,208</td>
-<td><code>bun run baseline.js</code></td>
-</tr>
-<tr>
-<td>Go</td>
-<td>5,227</td>
-<td><code>go run go/main.go</code></td>
-</tr>
-<tr>
-<td>Rust (tokio)</td>
-<td>5,466</td>
-<td><code>cd rust &amp;&amp; cargo run --release</code></td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Node</td>
+          <td>651</td>
+          <td><code>node baseline.js</code></td>
+      </tr>
+      <tr>
+          <td>Deno</td>
+          <td>2,290</td>
+          <td><code>deno run --allow-all baseline.js</code></td>
+      </tr>
+      <tr>
+          <td>Bun</td>
+          <td>2,208</td>
+          <td><code>bun run baseline.js</code></td>
+      </tr>
+      <tr>
+          <td>Go</td>
+          <td>5,227</td>
+          <td><code>go run go/main.go</code></td>
+      </tr>
+      <tr>
+          <td>Rust (tokio)</td>
+          <td>5,466</td>
+          <td><code>cd rust &amp;&amp; cargo run --release</code></td>
+      </tr>
+  </tbody>
 </table>
 <p>Ok, so Node is slow. Deno and Bun have figured out how to make this faster, and
 the compiled, thread-pool languages are much faster again.</p>
@@ -98,19 +112,19 @@ let&rsquo;s try and improve things with Node.</p>
 <h2 id="node-cluster-module">Node <code>cluster</code> Module</h2>
 <p>The simplest thing we can do spawn more processes and run an http server
 per-process using Node&rsquo;s <code>cluster</code> module. Like so:</p>
-<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="nx">cluster</span> <span class="nx">from</span> <span class="s2">&#34;node:cluster&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">availableParallelism</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:os&#34;</span><span class="p">;</span>
-
-<span class="k">if</span> <span class="p">(</span><span class="nx">cluster</span><span class="p">.</span><span class="nx">isPrimary</span><span class="p">)</span> <span class="p">{</span>
-  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">availableParallelism</span><span class="p">(</span><span class="p">)</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="nx">cluster</span><span class="p">.</span><span class="nx">fork</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
-<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
-  <span class="nx">http</span>
-    <span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;hi&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span><span class="p">)</span>
-    <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">)</span><span class="p">;</span>
-<span class="p">}</span>
-</code></pre></div><p>Node shares the network socket between processes here, so all of our processes
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">cluster</span> <span class="nx">from</span> <span class="s2">&#34;node:cluster&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">availableParallelism</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:os&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="nx">cluster</span><span class="p">.</span><span class="nx">isPrimary</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">for</span> <span class="p">(</span><span class="kd">let</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">availableParallelism</span><span class="p">();</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="nx">cluster</span><span class="p">.</span><span class="nx">fork</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">http</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="nx">createServer</span><span class="p">((</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;hi&#34;</span><span class="p">]).</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Node shares the network socket between processes here, so all of our processes
 can listen on <code>:8001</code> and they&rsquo;ll be routed requests round-robin.</p>
 <p>The main issue with this approach for me is that each HTTP server is isolated in
 it&rsquo;s own process. This can complicate things if you manage any kind of in-memory
@@ -119,30 +133,30 @@ ideally find a way to keep the single thread execution model of javascript and
 still make spawns fast.</p>
 <p>Here are the results:</p>
 <table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Node</td>
-<td>1,766</td>
-<td><code>node cluster.js</code></td>
-</tr>
-<tr>
-<td>Deno</td>
-<td>2,133</td>
-<td><code>deno run --allow-all cluster.js</code></td>
-</tr>
-<tr>
-<td>Bun</td>
-<td>n/a</td>
-<td>&ldquo;node:cluster is not yet implemented in Bun&rdquo;</td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Node</td>
+          <td>1,766</td>
+          <td><code>node cluster.js</code></td>
+      </tr>
+      <tr>
+          <td>Deno</td>
+          <td>2,133</td>
+          <td><code>deno run --allow-all cluster.js</code></td>
+      </tr>
+      <tr>
+          <td>Bun</td>
+          <td>n/a</td>
+          <td>&ldquo;node:cluster is not yet implemented in Bun&rdquo;</td>
+      </tr>
+  </tbody>
 </table>
 <p>Super weird. Deno is slower, Bun doesn&rsquo;t work just yet, and Node has improved
 a lot, but I would have expected it to be even faster.</p>
@@ -153,82 +167,82 @@ threads.</p>
 <p>Here&rsquo;s our <code>worker-threads/worker.js</code> code. We listen for messages with a
 command and an id. We run it and post the result back. We&rsquo;re using <code>execFile</code>
 here for convenience, but it is just an abstraction on top of <code>spawn</code>.</p>
-<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">import</span> <span class="p">{</span> <span class="nx">execFile</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">parentPort</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:worker_threads&#34;</span><span class="p">;</span>
-
-<span class="nx">parentPort</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">,</span> <span class="p">...</span><span class="nx">args</span><span class="p">]</span> <span class="o">=</span> <span class="nx">message</span><span class="p">;</span>
-
-  <span class="nx">execFile</span><span class="p">(</span><span class="nx">cmd</span><span class="p">,</span> <span class="nx">args</span><span class="p">,</span> <span class="p">(</span><span class="nx">_error</span><span class="p">,</span> <span class="nx">stdout</span><span class="p">,</span> <span class="nx">_stderr</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-    <span class="nx">parentPort</span><span class="p">.</span><span class="nx">postMessage</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">stdout</span><span class="p">]</span><span class="p">)</span><span class="p">;</span>
-  <span class="p">}</span><span class="p">)</span><span class="p">;</span>
-<span class="p">}</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>And here&rsquo;s our <code>worker-threads/index.js</code>. We create 8 worker threads. When we
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">execFile</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">parentPort</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:worker_threads&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">parentPort</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">,</span> <span class="p">...</span><span class="nx">args</span><span class="p">]</span> <span class="o">=</span> <span class="nx">message</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="nx">execFile</span><span class="p">(</span><span class="nx">cmd</span><span class="p">,</span> <span class="nx">args</span><span class="p">,</span> <span class="p">(</span><span class="nx">_error</span><span class="p">,</span> <span class="nx">stdout</span><span class="p">,</span> <span class="nx">_stderr</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">parentPort</span><span class="p">.</span><span class="nx">postMessage</span><span class="p">([</span><span class="nx">id</span><span class="p">,</span> <span class="nx">stdout</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">});</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span></code></pre></div><p>And here&rsquo;s our <code>worker-threads/index.js</code>. We create 8 worker threads. When we
 want to handle a request we send a message to a thread to make the spawn call
 and send back the output. Once we get the response back, we respond to the http
 request.</p>
-<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">import</span> <span class="nx">assert</span> <span class="nx">from</span> <span class="s2">&#34;node:assert&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">EventEmitter</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:events&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="p">{</span> <span class="nx">Worker</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:worker_threads&#34;</span><span class="p">;</span>
-
-<span class="kr">const</span> <span class="nx">newWorker</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Worker</span><span class="p">(</span><span class="s2">&#34;./worker-threads/worker.js&#34;</span><span class="p">)</span><span class="p">;</span>
-  <span class="kr">const</span> <span class="nx">ee</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">EventEmitter</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
-  <span class="c1">// Emit messages from the worker to the EventEmitter by id.
-</span><span class="c1"></span>  <span class="nx">worker</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">msg</span><span class="p">]</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">msg</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-  <span class="k">return</span> <span class="p">{</span> <span class="nx">worker</span><span class="p">,</span> <span class="nx">ee</span> <span class="p">}</span><span class="p">;</span>
-<span class="p">}</span><span class="p">;</span>
-
-<span class="c1">// Spawn 8 worker threads.
-</span><span class="c1"></span><span class="kr">const</span> <span class="nx">workers</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="p">{</span> <span class="nx">length</span><span class="o">:</span> <span class="mi">8</span> <span class="p">}</span><span class="p">,</span> <span class="nx">newWorker</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">randomWorker</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="nx">workers</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">(</span><span class="p">)</span> <span class="o">*</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="p">]</span><span class="p">;</span>
-
-<span class="kr">const</span> <span class="nx">spawnInWorker</span> <span class="o">=</span> <span class="nx">async</span> <span class="p">(</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nx">randomWorker</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
-  <span class="kr">const</span> <span class="nx">id</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
-  <span class="c1">// Send and wait for our response.
-</span><span class="c1"></span>  <span class="nx">worker</span><span class="p">.</span><span class="nx">worker</span><span class="p">.</span><span class="nx">postMessage</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="s2">&#34;hi&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">;</span>
-  <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">(</span><span class="p">(</span><span class="nx">resolve</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-    <span class="nx">worker</span><span class="p">.</span><span class="nx">ee</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-      <span class="nx">resolve</span><span class="p">(</span><span class="nx">msg</span><span class="p">)</span><span class="p">;</span>
-    <span class="p">}</span><span class="p">)</span><span class="p">;</span>
-  <span class="p">}</span><span class="p">)</span><span class="p">;</span>
-<span class="p">}</span><span class="p">;</span>
-
-<span class="nx">http</span>
-  <span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="nx">async</span> <span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
-    <span class="kd">let</span> <span class="nx">resp</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">spawnInWorker</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
-    <span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">resp</span><span class="p">,</span> <span class="s2">&#34;hi\n&#34;</span><span class="p">)</span><span class="p">;</span> <span class="c1">// no cheating!
-</span><span class="c1"></span>    <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span><span class="p">;</span>
-  <span class="p">}</span><span class="p">)</span>
-  <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>Results!:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">assert</span> <span class="nx">from</span> <span class="s2">&#34;node:assert&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">EventEmitter</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:events&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">Worker</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:worker_threads&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">newWorker</span> <span class="o">=</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Worker</span><span class="p">(</span><span class="s2">&#34;./worker-threads/worker.js&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">ee</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">EventEmitter</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// Emit messages from the worker to the EventEmitter by id.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">worker</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">([</span><span class="nx">id</span><span class="p">,</span> <span class="nx">msg</span><span class="p">])</span> <span class="p">=&gt;</span> <span class="nx">ee</span><span class="p">.</span><span class="nx">emit</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">msg</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="p">{</span> <span class="nx">worker</span><span class="p">,</span> <span class="nx">ee</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Spawn 8 worker threads.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kr">const</span> <span class="nx">workers</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">({</span> <span class="nx">length</span><span class="o">:</span> <span class="mi">8</span> <span class="p">},</span> <span class="nx">newWorker</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">randomWorker</span> <span class="o">=</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="nx">workers</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">)];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">spawnInWorker</span> <span class="o">=</span> <span class="kr">async</span> <span class="p">()</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nx">randomWorker</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">id</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// Send and wait for our response.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="nx">worker</span><span class="p">.</span><span class="nx">worker</span><span class="p">.</span><span class="nx">postMessage</span><span class="p">([</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;echo&#34;</span><span class="p">,</span> <span class="s2">&#34;hi&#34;</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="k">new</span> <span class="nb">Promise</span><span class="p">((</span><span class="nx">resolve</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">worker</span><span class="p">.</span><span class="nx">ee</span><span class="p">.</span><span class="nx">once</span><span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">      <span class="nx">resolve</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">});</span>
+</span></span><span class="line"><span class="cl">  <span class="p">});</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">http</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="kr">async</span> <span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">let</span> <span class="nx">resp</span> <span class="o">=</span> <span class="kr">await</span> <span class="nx">spawnInWorker</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">assert</span><span class="p">.</span><span class="nx">equal</span><span class="p">(</span><span class="nx">resp</span><span class="p">,</span> <span class="s2">&#34;hi\n&#34;</span><span class="p">);</span> <span class="c1">// no cheating!
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nx">res</span><span class="p">.</span><span class="nx">end</span><span class="p">(</span><span class="nx">resp</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">})</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">);</span>
+</span></span></code></pre></div><p>Results!:</p>
 <table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Node</td>
-<td>426</td>
-<td><code>node worker-threads/index.js</code></td>
-</tr>
-<tr>
-<td>Deno</td>
-<td>3,601</td>
-<td><code>deno run --allow-all worker-threads/index.js</code></td>
-</tr>
-<tr>
-<td>Bun</td>
-<td>2,898</td>
-<td><code>bun run worker-threads/index.js</code></td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Node</td>
+          <td>426</td>
+          <td><code>node worker-threads/index.js</code></td>
+      </tr>
+      <tr>
+          <td>Deno</td>
+          <td>3,601</td>
+          <td><code>deno run --allow-all worker-threads/index.js</code></td>
+      </tr>
+      <tr>
+          <td>Bun</td>
+          <td>2,898</td>
+          <td><code>bun run worker-threads/index.js</code></td>
+      </tr>
+  </tbody>
 </table>
 <p>Node is slower! Ok, so presumably we are not bypassing Node&rsquo;s bottleneck by
 using threads. So we&rsquo;re doing the same work with the added overhead of
@@ -241,67 +255,67 @@ good job of keeping the sycall overhead off of the execution thread.</p>
 <p>If threads are not going to work, let&rsquo;s use child processes to do the work.</p>
 <p>This is quite easy. We simply swap out the worker threads for processes spawned
 by <code>child_process.fork</code> and change how we send and receive messages.</p>
-<div class="highlight"><pre class="chroma"><code class="language-diff" data-lang="diff">$ git diff --unified=1 --no-index ./worker-threads/ ./child-process/
-<span class="gh">diff --git a/./worker-threads/index.js b/./child-process/index.js
-</span><span class="gh"></span><span class="gh">index 52a93fe..0ed206e 100644
-</span><span class="gh"></span><span class="gd">--- a/./worker-threads/index.js
-</span><span class="gd"></span><span class="gi">+++ b/./child-process/index.js
-</span><span class="gi"></span><span class="gu">@@ -3,6 +3,6 @@ import http from &#34;node:http&#34;;
-</span><span class="gu"></span> import { EventEmitter } from &#34;node:events&#34;;
-<span class="gd">-import { Worker } from &#34;node:worker_threads&#34;;
-</span><span class="gd"></span><span class="gi">+import { fork } from &#34;node:child_process&#34;;
-</span><span class="gi"></span>
- const newWorker = () =&gt; {
-<span class="gd">-  const worker = new Worker(&#34;./worker-threads/worker.js&#34;);
-</span><span class="gd"></span><span class="gi">+  const worker = fork(&#34;./child-process/worker.js&#34;);
-</span><span class="gi"></span>   const ee = new EventEmitter();
-<span class="gu">@@ -21,3 +21,3 @@ const spawnInWorker = async () =&gt; {
-</span><span class="gu"></span>   // Send and wait for our response.
-<span class="gd">-  worker.worker.postMessage([id, &#34;echo&#34;, &#34;hi&#34;]);
-</span><span class="gd"></span><span class="gi">+  worker.worker.send([id, &#34;echo&#34;, &#34;hi&#34;]);
-</span><span class="gi"></span>   return new Promise((resolve) =&gt; {
-<span class="gh">diff --git a/./worker-threads/worker.js b/./child-process/worker.js
-</span><span class="gh"></span><span class="gh">index 5f025ca..9b3fcf5 100644
-</span><span class="gh"></span><span class="gd">--- a/./worker-threads/worker.js
-</span><span class="gd"></span><span class="gi">+++ b/./child-process/worker.js
-</span><span class="gi"></span><span class="gu">@@ -1,5 +1,4 @@
-</span><span class="gu"></span> import { execFile } from &#34;node:child_process&#34;;
-<span class="gd">-import { parentPort } from &#34;node:worker_threads&#34;;
-</span><span class="gd"></span>
-<span class="gd">-parentPort.on(&#34;message&#34;, (message) =&gt; {
-</span><span class="gd"></span><span class="gi">+process.on(&#34;message&#34;, (message) =&gt; {
-</span><span class="gi"></span>   const [id, cmd, ...args] = message;
-<span class="gu">@@ -7,3 +6,3 @@ parentPort.on(&#34;message&#34;, (message) =&gt; {
-</span><span class="gu"></span>   execFile(cmd, args, (_error, stdout, _stderr) =&gt; {
-<span class="gd">-    parentPort.postMessage([id, stdout]);
-</span><span class="gd"></span><span class="gi">+    process.send([id, stdout]);
-</span><span class="gi"></span>   });
-</code></pre></div><p>Nice. And the results:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl">$ git diff --unified=1 --no-index ./worker-threads/ ./child-process/
+</span></span><span class="line"><span class="cl"><span class="gh">diff --git a/./worker-threads/index.js b/./child-process/index.js
+</span></span></span><span class="line"><span class="cl"><span class="gh">index 52a93fe..0ed206e 100644
+</span></span></span><span class="line"><span class="cl"><span class="gh"></span><span class="gd">--- a/./worker-threads/index.js
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/./child-process/index.js
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span><span class="gu">@@ -3,6 +3,6 @@ import http from &#34;node:http&#34;;
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span> import { EventEmitter } from &#34;node:events&#34;;
+</span></span><span class="line"><span class="cl"><span class="gd">-import { Worker } from &#34;node:worker_threads&#34;;
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+import { fork } from &#34;node:child_process&#34;;
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>
+</span></span><span class="line"><span class="cl"> const newWorker = () =&gt; {
+</span></span><span class="line"><span class="cl"><span class="gd">-  const worker = new Worker(&#34;./worker-threads/worker.js&#34;);
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+  const worker = fork(&#34;./child-process/worker.js&#34;);
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>   const ee = new EventEmitter();
+</span></span><span class="line"><span class="cl"><span class="gu">@@ -21,3 +21,3 @@ const spawnInWorker = async () =&gt; {
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>   // Send and wait for our response.
+</span></span><span class="line"><span class="cl"><span class="gd">-  worker.worker.postMessage([id, &#34;echo&#34;, &#34;hi&#34;]);
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+  worker.worker.send([id, &#34;echo&#34;, &#34;hi&#34;]);
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>   return new Promise((resolve) =&gt; {
+</span></span><span class="line"><span class="cl"><span class="gh">diff --git a/./worker-threads/worker.js b/./child-process/worker.js
+</span></span></span><span class="line"><span class="cl"><span class="gh">index 5f025ca..9b3fcf5 100644
+</span></span></span><span class="line"><span class="cl"><span class="gh"></span><span class="gd">--- a/./worker-threads/worker.js
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+++ b/./child-process/worker.js
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span><span class="gu">@@ -1,5 +1,4 @@
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span> import { execFile } from &#34;node:child_process&#34;;
+</span></span><span class="line"><span class="cl"><span class="gd">-import { parentPort } from &#34;node:worker_threads&#34;;
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span>
+</span></span><span class="line"><span class="cl"><span class="gd">-parentPort.on(&#34;message&#34;, (message) =&gt; {
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+process.on(&#34;message&#34;, (message) =&gt; {
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>   const [id, cmd, ...args] = message;
+</span></span><span class="line"><span class="cl"><span class="gu">@@ -7,3 +6,3 @@ parentPort.on(&#34;message&#34;, (message) =&gt; {
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>   execFile(cmd, args, (_error, stdout, _stderr) =&gt; {
+</span></span><span class="line"><span class="cl"><span class="gd">-    parentPort.postMessage([id, stdout]);
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+    process.send([id, stdout]);
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>   });
+</span></span></code></pre></div><p>Nice. And the results:</p>
 <table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Node</td>
-<td>2,209</td>
-<td><code>node child-process/index.js</code></td>
-</tr>
-<tr>
-<td>Deno</td>
-<td>3,800</td>
-<td><code>deno run --allow-all child-process/index.js</code></td>
-</tr>
-<tr>
-<td>Bun</td>
-<td>3,871</td>
-<td><code>bun run worker-threads/index.js</code></td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Node</td>
+          <td>2,209</td>
+          <td><code>node child-process/index.js</code></td>
+      </tr>
+      <tr>
+          <td>Deno</td>
+          <td>3,800</td>
+          <td><code>deno run --allow-all child-process/index.js</code></td>
+      </tr>
+      <tr>
+          <td>Bun</td>
+          <td>3,871</td>
+          <td><code>bun run worker-threads/index.js</code></td>
+      </tr>
+  </tbody>
 </table>
 <p>Good speedups all around. I am very curious what the bottleneck is that is
 preventing Deno and Bun from getting to Rust/Go speeds. Please let me know if
@@ -309,24 +323,24 @@ you have suggestions for how to dig into that!</p>
 <p>One fun thing here is that we can mix Node and Bun. Bun implements the Node IPC
 protocol, so we can configure Node to spawn Bun child processes. Let&rsquo;s try that.</p>
 <p>Update the <code>fork</code> arguments to use the <code>bun</code> binary instead of Node.</p>
-<div class="highlight"><pre class="chroma"><code class="language-js" data-lang="js"><span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nx">fork</span><span class="p">(</span><span class="s2">&#34;./child-process/worker.js&#34;</span><span class="p">,</span> <span class="p">{</span>
-  <span class="nx">execPath</span><span class="o">:</span> <span class="s2">&#34;/home/maxm/.bun/bin/bun&#34;</span><span class="p">,</span>
-<span class="p">}</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Node + Bun</td>
-<td>3,853</td>
-<td><code>node child-process/index.js</code></td>
-</tr>
-</tbody>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-js" data-lang="js"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">worker</span> <span class="o">=</span> <span class="nx">fork</span><span class="p">(</span><span class="s2">&#34;./child-process/worker.js&#34;</span><span class="p">,</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">execPath</span><span class="o">:</span> <span class="s2">&#34;/home/maxm/.bun/bin/bun&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span></code></pre></div><table>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Node + Bun</td>
+          <td>3,853</td>
+          <td><code>node child-process/index.js</code></td>
+      </tr>
+  </tbody>
 </table>
 <p>Hah, cool. I get to use Node on the main thread and leverage Bun&rsquo;s performance.</p>
 <h2 id="stdio">Stdio</h2>
@@ -364,47 +378,47 @@ socket for each one to send logs.</li>
 from Sqlite&rsquo;s source. This is a 163Kb file. We&rsquo;ll run the command <code>cat main.c</code>
 to print it out.</p>
 <p>Here&rsquo;s our <code>baseline.js</code> again with that update:</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="nx">http</span> <span class="nx">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
-<span class="nx">http</span>
-  <span class="p">.</span><span class="nx">createServer</span><span class="p">(</span><span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;cat&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;main.c&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">)</span><span class="p">)</span>
-  <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>I&rsquo;ve updated the Go and Rust code as well. Let&rsquo;s see how they do:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="kr">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">http</span> <span class="kr">from</span> <span class="s2">&#34;node:http&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">http</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="nx">createServer</span><span class="p">((</span><span class="nx">_</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">spawn</span><span class="p">(</span><span class="s2">&#34;cat&#34;</span><span class="p">,</span> <span class="p">[</span><span class="s2">&#34;main.c&#34;</span><span class="p">]).</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">pipe</span><span class="p">(</span><span class="nx">res</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">  <span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="mi">8001</span><span class="p">);</span>
+</span></span></code></pre></div><p>I&rsquo;ve updated the Go and Rust code as well. Let&rsquo;s see how they do:</p>
 <table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Node</td>
-<td>374</td>
-<td><code>node baseline.js</code></td>
-</tr>
-<tr>
-<td>Deno</td>
-<td>667</td>
-<td><code>deno run --allow-all baseline.js</code></td>
-</tr>
-<tr>
-<td>Bun</td>
-<td>1,374</td>
-<td><code>bun run baseline.js</code></td>
-</tr>
-<tr>
-<td>Go</td>
-<td>2,757</td>
-<td><code>go run go/main.go</code></td>
-</tr>
-<tr>
-<td>Rust (tokio)</td>
-<td>3,535</td>
-<td><code>cd rust &amp;&amp; cargo run --release</code></td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Node</td>
+          <td>374</td>
+          <td><code>node baseline.js</code></td>
+      </tr>
+      <tr>
+          <td>Deno</td>
+          <td>667</td>
+          <td><code>deno run --allow-all baseline.js</code></td>
+      </tr>
+      <tr>
+          <td>Bun</td>
+          <td>1,374</td>
+          <td><code>bun run baseline.js</code></td>
+      </tr>
+      <tr>
+          <td>Go</td>
+          <td>2,757</td>
+          <td><code>go run go/main.go</code></td>
+      </tr>
+      <tr>
+          <td>Rust (tokio)</td>
+          <td>3,535</td>
+          <td><code>cd rust &amp;&amp; cargo run --release</code></td>
+      </tr>
+  </tbody>
 </table>
 <p>Fascinating. It&rsquo;s cool to see Bun and Rust pull ahead here compared to the
 previous benchmarks. Node is still slow very slow and Deno is surprisingly
@@ -413,69 +427,69 @@ unhappy with this workload.</p>
 getting quite complex so I won&rsquo;t post it here, but you can <a href="https://github.com/maxmcd/process-per-request/tree/7528cd8045c998c8b5451961e0818473b4a81860/child-process-comm-channel">take a look
 here</a>.</p>
 <table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Node</td>
-<td>1,336</td>
-<td><code>node child-process-comm-channel/index.js</code></td>
-</tr>
-<tr>
-<td>Node + Bun</td>
-<td>2,635</td>
-<td><code>node child-process-comm-channel/index.js</code></td>
-</tr>
-<tr>
-<td>Deno</td>
-<td>862</td>
-<td><code>deno run --allow-all child-process-comm-channel/index.js</code></td>
-</tr>
-<tr>
-<td>Bun</td>
-<td>1,833</td>
-<td><code>bun child-process-comm-channel/index.js</code></td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Node</td>
+          <td>1,336</td>
+          <td><code>node child-process-comm-channel/index.js</code></td>
+      </tr>
+      <tr>
+          <td>Node + Bun</td>
+          <td>2,635</td>
+          <td><code>node child-process-comm-channel/index.js</code></td>
+      </tr>
+      <tr>
+          <td>Deno</td>
+          <td>862</td>
+          <td><code>deno run --allow-all child-process-comm-channel/index.js</code></td>
+      </tr>
+      <tr>
+          <td>Bun</td>
+          <td>1,833</td>
+          <td><code>bun child-process-comm-channel/index.js</code></td>
+      </tr>
+  </tbody>
 </table>
 <p>Haha. I had seen some random benchmark results where Node+Bun was faster than
 bun alone, but it never netted out in the final runs.</p>
 <p>The Deno results are quite perplexing. In implementing this example I had a
 &ldquo;bug&rdquo; where I was buffering the response as a string. Here&rsquo;s the diff of me fixing it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-diff" data-lang="diff"><span class="gu">@@ -88,9 +88,8 @@ const spawnInWorker = async (res) =&gt; {
-</span><span class="gu"></span>   worker.child.send([id, &#34;spawn&#34;, [&#34;cat&#34;, [&#34;main.c&#34;]]]);
-<span class="gd">-  let resp = &#34;&#34;;
-</span><span class="gd"></span>   worker.ee.on(id, (msg, data) =&gt; {
-     if (msg == MessageType.STDOUT) {
-<span class="gd">-      resp += data.toString();
-</span><span class="gd"></span><span class="gi">+      res.write(data);
-</span><span class="gi"></span>     }
-     if (msg == MessageType.STDOUT_CLOSE) {
-<span class="gd">-      res.end(resp);
-</span><span class="gd"></span><span class="gi">+      res.end();
-</span><span class="gi"></span>       worker.requests -= 1;
-</code></pre></div><p>Deno performs far better before this fix! Node and Bun both perform better once
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-diff" data-lang="diff"><span class="line"><span class="cl"><span class="gu">@@ -88,9 +88,8 @@ const spawnInWorker = async (res) =&gt; {
+</span></span></span><span class="line"><span class="cl"><span class="gu"></span>   worker.child.send([id, &#34;spawn&#34;, [&#34;cat&#34;, [&#34;main.c&#34;]]]);
+</span></span><span class="line"><span class="cl"><span class="gd">-  let resp = &#34;&#34;;
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span>   worker.ee.on(id, (msg, data) =&gt; {
+</span></span><span class="line"><span class="cl">     if (msg == MessageType.STDOUT) {
+</span></span><span class="line"><span class="cl"><span class="gd">-      resp += data.toString();
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+      res.write(data);
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>     }
+</span></span><span class="line"><span class="cl">     if (msg == MessageType.STDOUT_CLOSE) {
+</span></span><span class="line"><span class="cl"><span class="gd">-      res.end(resp);
+</span></span></span><span class="line"><span class="cl"><span class="gd"></span><span class="gi">+      res.end();
+</span></span></span><span class="line"><span class="cl"><span class="gi"></span>       worker.requests -= 1;
+</span></span></code></pre></div><p>Deno performs far better before this fix! Node and Bun both perform better once
 the string buffer is removed.</p>
 <table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Deno + string buffer</td>
-<td>1,453</td>
-<td><code>deno run --allow-all child-process-comm-channel/index.js</code></td>
-</tr>
-</tbody>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Deno + string buffer</td>
+          <td>1,453</td>
+          <td><code>deno run --allow-all child-process-comm-channel/index.js</code></td>
+      </tr>
+  </tbody>
 </table>
 <p>Weird!</p>
 <p>Finally, here is the <code>process.send</code> implementation. It is fast and also
@@ -484,31 +498,31 @@ because it is slower than I&rsquo;d like, doesn&rsquo;t support Deno and Bun, an
 very little space to improve things. However, this implementation is deeply
 practical and easy to understand, which is beautiful. Here&rsquo;s the source of
 <code>worker.js</code>, the rest <a href="https://github.com/maxmcd/process-per-request/tree/7528cd8045c998c8b5451961e0818473b4a81860/child-process-send-logs">is here</a>.</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
-<span class="kr">import</span> <span class="nx">process</span> <span class="nx">from</span> <span class="s2">&#34;node:process&#34;</span><span class="p">;</span>
-
-<span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="p">{</span>
-  <span class="kr">const</span> <span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">,</span> <span class="p">.</span><span class="p">.</span><span class="p">.</span><span class="nx">args</span><span class="p">]</span> <span class="o">=</span> <span class="nx">message</span><span class="p">;</span>
-  <span class="kr">const</span> <span class="nx">cp</span> <span class="o">=</span> <span class="nx">spawn</span><span class="p">(</span><span class="nx">cmd</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span><span class="p">;</span>
-  <span class="nx">cp</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;data&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;stdout&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-  <span class="nx">cp</span><span class="p">.</span><span class="nx">stderr</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;data&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;stderr&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-  <span class="nx">cp</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;close&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">code</span><span class="p">,</span> <span class="nx">signal</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;exit&#34;</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">signal</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-<span class="p">}</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><table>
-<thead>
-<tr>
-<th>Language/Runtime</th>
-<th>Req/s</th>
-<th>Command</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Node</td>
-<td>1,179</td>
-<td><code>node child-process-send-logs/index.js</code></td>
-</tr>
-</tbody>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">spawn</span> <span class="p">}</span> <span class="kr">from</span> <span class="s2">&#34;node:child_process&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">process</span> <span class="kr">from</span> <span class="s2">&#34;node:process&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">process</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;message&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">message</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="p">[</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cmd</span><span class="p">,</span> <span class="p">...</span><span class="nx">args</span><span class="p">]</span> <span class="o">=</span> <span class="nx">message</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kr">const</span> <span class="nx">cp</span> <span class="o">=</span> <span class="nx">spawn</span><span class="p">(</span><span class="nx">cmd</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">cp</span><span class="p">.</span><span class="nx">stdout</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;data&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">([</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;stdout&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">cp</span><span class="p">.</span><span class="nx">stderr</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;data&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">([</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;stderr&#34;</span><span class="p">,</span> <span class="nx">data</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">cp</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s2">&#34;close&#34;</span><span class="p">,</span> <span class="p">(</span><span class="nx">code</span><span class="p">,</span> <span class="nx">signal</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">process</span><span class="p">.</span><span class="nx">send</span><span class="p">([</span><span class="nx">id</span><span class="p">,</span> <span class="s2">&#34;exit&#34;</span><span class="p">,</span> <span class="nx">code</span><span class="p">,</span> <span class="nx">signal</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span></code></pre></div><table>
+  <thead>
+      <tr>
+          <th>Language/Runtime</th>
+          <th>Req/s</th>
+          <th>Command</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>Node</td>
+          <td>1,179</td>
+          <td><code>node child-process-send-logs/index.js</code></td>
+      </tr>
+  </tbody>
 </table>
 <p>Very nice, probably the practical choice if you are only targeting Node.</p>
 <h2 id="load-balancing">Load Balancing</h2>
@@ -516,17 +530,17 @@ practical and easy to understand, which is beautiful. Here&rsquo;s the source of
 complicated schedulers</a> that <a href="https://tokio.rs/blog/2019-10-scheduler">distribute work
 efficiently</a>. So far, when picking a
 worker I&rsquo;ve been grabbing a random one:</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">const</span> <span class="nx">workers</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">from</span><span class="p">(</span><span class="p">{</span> <span class="nx">length</span>: <span class="kt">8</span> <span class="p">}</span><span class="p">,</span> <span class="nx">newWorker</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">randomWorker</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">workers</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">(</span><span class="p">)</span> <span class="o">*</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span><span class="p">]</span><span class="p">;</span>
-</code></pre></div><p>However, we can also implement round-robin, and least-connections style load
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">workers</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">Promise</span><span class="p">.</span><span class="nx">all</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="kr">from</span><span class="p">({</span> <span class="nx">length</span>: <span class="kt">8</span> <span class="p">},</span> <span class="nx">newWorker</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">randomWorker</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">workers</span><span class="p">[</span><span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nb">Math</span><span class="p">.</span><span class="nx">random</span><span class="p">()</span> <span class="o">*</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">)];</span>
+</span></span></code></pre></div><p>However, we can also implement round-robin, and least-connections style load
 balancing. <a href="https://samwho.dev/load-balancing/">See a wonderful writeup on those
 here</a>.</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">const</span> <span class="nx">pickWorkerInOrder</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="nx">workers</span><span class="p">[</span><span class="p">(</span><span class="nx">count</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">pickWorkerWithLeastRequests</span> <span class="o">=</span> <span class="p">(</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span>
-  <span class="nx">workers</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="p">(</span><span class="nx">selectedWorker</span><span class="p">,</span> <span class="nx">worker</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span>
-    <span class="nx">worker</span><span class="p">.</span><span class="nx">requests</span> <span class="o">&lt;</span> <span class="nx">selectedWorker</span><span class="p">.</span><span class="nx">requests</span> <span class="o">?</span> <span class="nx">worker</span> : <span class="kt">selectedWorker</span>
-  <span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>Sadly I didn&rsquo;t see consistent performance improvements with these approaches.
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">pickWorkerInOrder</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nx">workers</span><span class="p">[(</span><span class="nx">count</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="nx">workers</span><span class="p">.</span><span class="nx">length</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">pickWorkerWithLeastRequests</span> <span class="o">=</span> <span class="p">()</span> <span class="o">=&gt;</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">workers</span><span class="p">.</span><span class="nx">reduce</span><span class="p">((</span><span class="nx">selectedWorker</span><span class="p">,</span> <span class="nx">worker</span><span class="p">)</span> <span class="o">=&gt;</span>
+</span></span><span class="line"><span class="cl">    <span class="nx">worker</span><span class="p">.</span><span class="nx">requests</span> <span class="o">&lt;</span> <span class="nx">selectedWorker</span><span class="p">.</span><span class="nx">requests</span> <span class="o">?</span> <span class="nx">worker</span> : <span class="kt">selectedWorker</span>
+</span></span><span class="line"><span class="cl">  <span class="p">);</span>
+</span></span></code></pre></div><p>Sadly I didn&rsquo;t see consistent performance improvements with these approaches.
 They all perform about the same. Maybe more typical workloads where the spawn
 calls are not entirely uniform would benefit more from these changes.</p>
 <h2 id="library">Library?</h2>
@@ -552,91 +566,92 @@ time :)</p>
 			<pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
 			
 			<guid>https://maxmcd.com/posts/running-go-on-val-town/</guid>
-			<description>Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?
- If you want to skip all this and just run Go on Val Town you can follow the instructions here.</description>
+			<description>&lt;p&gt;&lt;img src=&#34;https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public&#34; alt=&#34;image.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on &lt;a href=&#34;https://val.town&#34;&gt;Val Town&lt;/a&gt; and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;If you want to skip all this and just run Go on Val Town you can &lt;a href=&#34;https://www.val.town/v/maxm/compileAndUploadTinygoWasm&#34;&gt;follow the instructions here&lt;/a&gt;. There&amp;rsquo;s also a &lt;a href=&#34;https://www.val.town/v/maxm/tinygoWasmHelloWorld&#34;&gt;basic &amp;ldquo;Hello World&amp;rdquo;&lt;/a&gt; example, and another that&amp;rsquo;s &lt;a href=&#34;https://www.val.town/v/maxm/tinygoHttpExample&#34;&gt;much more fun and complex&lt;/a&gt;.&lt;/p&gt;</description>
 			<content type="html"><![CDATA[<p><img src="https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public" alt="image.png"></p>
 <p>Let&rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on <a href="https://val.town">Val Town</a> and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&rsquo;t support Go, but it supports WASM. Can we make it all work!?</p>
 <blockquote>
-<p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/tinygoWasmHelloWorld">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p>
-</blockquote>
+<p>If you want to skip all this and just run Go on Val Town you can <a href="https://www.val.town/v/maxm/compileAndUploadTinygoWasm">follow the instructions here</a>. There&rsquo;s also a <a href="https://www.val.town/v/maxm/tinygoWasmHelloWorld">basic &ldquo;Hello World&rdquo;</a> example, and another that&rsquo;s <a href="https://www.val.town/v/maxm/tinygoHttpExample">much more fun and complex</a>.</p></blockquote>
 <p>About two months ago I started working at Val Town. Before that I had spent many years writing Go and had always thought it would be quite poetic to get a Go HTTP handler running on Val Town. The real dream is to get the Go compiler and Language Server running in browser so that you could really have the dynamic feel of Val Town, but for now we&rsquo;re going to settle for &ldquo;Writing some Go code, compile it, and having it handle an http request in Val Town&rdquo;.</p>
 <p>I thought it would be easy, and set out to find out:</p>
 <h2 id="setting-the-stage">Setting the stage</h2>
 <p>Val Town runs <a href="https://deno.com/">Deno</a>, so our goal for the moment is getting something running in Deno. We want to end up with something like this</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="nx">goWasmHandler</span> <span class="nx">from</span> <span class="s2">&#34;https://dreamland/maxmcd/nice/mod.ts&#34;</span>
-
-<span class="nx">Deno</span><span class="p">.</span><span class="nx">serve</span><span class="p">(</span><span class="p">{</span><span class="nx">port</span>: <span class="kt">8080</span><span class="p">}</span><span class="p">,</span> <span class="p">(</span><span class="nx">req</span>: <span class="kt">Request</span><span class="p">)</span><span class="o">:</span> <span class="nx">Promise</span><span class="o">&lt;</span><span class="nx">Response</span><span class="o">&gt;</span> <span class="o">=</span><span class="o">&gt;</span> <span class="p">{</span>
-    <span class="k">return</span> <span class="nx">goWasmHandler</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span>
-<span class="p">}</span><span class="p">)</span>
-</code></pre></div><p>Now, there are a few tutorials online about how to get Golang (or <a href="https://tinygo.org/">Tinygo</a>) WASM running in Deno. <a href="https://dev.to/taterbase/running-a-go-program-in-deno-via-wasm-2l08">As far</a> as I <a href="(https://github.com/philippgille/go-wasm)">could find</a>, these are mostly &ldquo;Hello World&rdquo; type things, or exporting and importing functions to just do some kind of work in Go. We want an HTTP request handler though so we&rsquo;re going to require a little more functionality.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">goWasmHandler</span> <span class="kr">from</span> <span class="s2">&#34;https://dreamland/maxmcd/nice/mod.ts&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">Deno</span><span class="p">.</span><span class="nx">serve</span><span class="p">({</span><span class="nx">port</span>: <span class="kt">8080</span><span class="p">},</span> <span class="p">(</span><span class="nx">req</span>: <span class="kt">Request</span><span class="p">)</span><span class="o">:</span> <span class="nx">Promise</span><span class="p">&lt;</span><span class="nt">Response</span><span class="p">&gt;</span> <span class="o">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nx">goWasmHandler</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">})</span>
+</span></span></code></pre></div><p>Now, there are a few tutorials online about how to get Golang (or <a href="https://tinygo.org/">Tinygo</a>) WASM running in Deno. <a href="https://dev.to/taterbase/running-a-go-program-in-deno-via-wasm-2l08">As far</a> as I <a href="(https://github.com/philippgille/go-wasm)">could find</a>, these are mostly &ldquo;Hello World&rdquo; type things, or exporting and importing functions to just do some kind of work in Go. We want an HTTP request handler though so we&rsquo;re going to require a little more functionality.</p>
 <h2 id="wasi">WASI</h2>
 <p>Go <a href="https://go.dev/blog/wasi">added WASI support</a>. Deno has <a href="https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts">a WASI library</a>. That should work right?</p>
 <p>We write our Go program with reckless optimism. Let&rsquo;s see if we can make an http request.</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;fmt&#34;</span>
-	<span class="s">&#34;net/http&#34;</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;https://www.maxmcd.com/&#34;</span><span class="p">)</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre></div><p>Compile it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">GOOS</span><span class="o">=</span>wasip1 <span class="nv">GOARCH</span><span class="o">=</span>wasm  go build -o main.wasm ./main.go
-</code></pre></div><p>Write a Deno script to run it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="nx">Context</span> <span class="nx">from</span> <span class="s2">&#34;https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts&#34;</span><span class="p">;</span>
-
-<span class="kr">const</span> <span class="nx">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Context</span><span class="p">(</span><span class="p">{</span>
-  <span class="nx">args</span>: <span class="kt">Deno.args</span><span class="p">,</span>
-  <span class="nx">env</span><span class="o">:</span> <span class="p">{</span><span class="p">}</span><span class="p">,</span>
-<span class="p">}</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">binary</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">module</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="nx">binary</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="p">{</span>
-  <span class="nx">wasi_snapshot_preview1</span>: <span class="kt">context.exports</span><span class="p">,</span>
-<span class="p">}</span><span class="p">)</span><span class="p">;</span>
-
-<span class="nx">context</span><span class="p">.</span><span class="nx">start</span><span class="p">(</span><span class="nx">instance</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>Run the script!</p>
-<pre><code>$ deno run --allow-net --allow-read ./index.ts
-&lt;nil&gt; Get &quot;https://www.maxmcd.com/&quot;: dial tcp: lookup www.google.com on [::1]:53: dial udp [::1]:53: Connection refused
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net/http&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;https://www.maxmcd.com/&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Compile it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">GOOS</span><span class="o">=</span>wasip1 <span class="nv">GOARCH</span><span class="o">=</span>wasm  go build -o main.wasm ./main.go
+</span></span></code></pre></div><p>Write a Deno script to run it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">Context</span> <span class="kr">from</span> <span class="s2">&#34;https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Context</span><span class="p">({</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">args</span>: <span class="kt">Deno.args</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">env</span><span class="o">:</span> <span class="p">{},</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">binary</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">module</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="nx">binary</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">wasi_snapshot_preview1</span>: <span class="kt">context.exports</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">context</span><span class="p">.</span><span class="nx">start</span><span class="p">(</span><span class="nx">instance</span><span class="p">);</span>
+</span></span></code></pre></div><p>Run the script!</p>
+<pre tabindex="0"><code>$ deno run --allow-net --allow-read ./index.ts
+&lt;nil&gt; Get &#34;https://www.maxmcd.com/&#34;: dial tcp: lookup www.google.com on [::1]:53: dial udp [::1]:53: Connection refused
 </code></pre><p>Ah no :(</p>
 <p>Ok, so <code>fmt.Println</code> is working, which is nice, but we can&rsquo;t seem to make a DNS query for the host. It looks like <a href="https://github.com/denoland/deno_std/blob/b31795879301189559383d3e496c341d3f695201/wasi/snapshot_preview1.ts#L1696-L1722">the Deno wasi lib doesn&rsquo;t support socket calls yet</a> (and is very clear about this in the readme) so no luck!</p>
 <h2 id="syscalljs">syscall/js</h2>
 <p>Ok, so WASI won&rsquo;t work (and was maybe a little too low level for us anyway since we just need an http handler), so what about Go&rsquo;s old <a href="https://pkg.go.dev/syscall/js">syscall/js</a> WASM bindings? Intended for browsers and some <a href="https://dev.to/taterbase/running-a-go-program-in-deno-via-wasm-2l08">Deno tutorials use it</a>, so why not us?</p>
 <p>Oh, we even know that in syscall/js the Go http standard library <a href="https://github.com/golang/go/blob/07fc59199b9522bfe0d14f35c4391394efc336c9/src/net/http/roundtrip_js.go#L129">has a <code>fetch</code> wrapper</a> implemented to make http calls with <code>http.Get</code>, so maybe that will work!</p>
 <p>We&rsquo;ll copy <code>wasm_exec.js</code> from Go:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">cp <span class="s2">&#34;</span><span class="k">$(</span>go env GOROOT<span class="k">)</span><span class="s2">/misc/wasm/wasm_exec.js</span><span class="s2">&#34;</span> .
-</code></pre></div><p>For some reason I can&rsquo;t run this like I see others doing in tutorials with <code>import * as _ from &quot;./wasm_exec.js&quot;</code>. Deno seems to ignore the file entirely and then the <code>Go</code> class is not added to <code>globalThis</code>. So I <a href="https://github.com/maxmcd/go-town/blob/main/go-js/wasm_exec.js#L7">modified it</a> to have a contrived export value.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">cp <span class="s2">&#34;</span><span class="k">$(</span>go env GOROOT<span class="k">)</span><span class="s2">/misc/wasm/wasm_exec.js&#34;</span> .
+</span></span></code></pre></div><p>For some reason I can&rsquo;t run this like I see others doing in tutorials with <code>import * as _ from &quot;./wasm_exec.js&quot;</code>. Deno seems to ignore the file entirely and then the <code>Go</code> class is not added to <code>globalThis</code>. So I <a href="https://github.com/maxmcd/go-town/blob/main/go-js/wasm_exec.js#L7">modified it</a> to have a contrived export value.</p>
 <p>Write our Deno script:</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="p">{</span> <span class="nx">go</span> <span class="kr">as</span> <span class="nx">g</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;./wasm_exec.js&#34;</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">g</span><span class="p">;</span>
-
-<span class="kr">const</span> <span class="nx">go</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">window</span><span class="p">.</span><span class="nx">Go</span><span class="p">(</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">buf</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFileSync</span><span class="p">(</span><span class="s2">&#34;./main.wasm&#34;</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">inst</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">buf</span><span class="p">,</span> <span class="nx">go</span><span class="p">.</span><span class="nx">importObject</span><span class="p">)</span><span class="p">;</span>
-<span class="nx">await</span> <span class="nx">go</span><span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="nx">inst</span><span class="p">.</span><span class="nx">instance</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>We&rsquo;ll use the same Go script as before, but this time we&rsquo;ll compile with <code>GOOS=js</code>:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash"><span class="nv">GOOS</span><span class="o">=</span>js <span class="nv">GOARCH</span><span class="o">=</span>wasm  go build -o main.wasm ./main.go
-</code></pre></div><p>Let&rsquo;s run it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ ./compile.sh <span class="o">&amp;&amp;</span> deno run --allow-net --allow-read ./index.ts
-<span class="p">&amp;</span><span class="o">{</span><span class="m">200</span> OK <span class="m">200</span>  <span class="m">0</span> <span class="m">0</span> map<span class="o">[</span>Access-Control-Allow-Origin:<span class="o">[</span>*<span class="o">]</span> Age:<span class="o">[</span>0<span class="o">]</span> Alt-Svc:<span class="o">[</span><span class="nv">h3</span><span class="o">=</span><span class="s2">&#34;:443&#34;</span><span class="p">;</span> <span class="nv">ma</span><span class="o">=</span>86400<span class="o">]</span> Cache-Control:<span class="o">[</span>max-age<span class="o">=</span>600<span class="o">]</span> Cf-Cache-Status:<span class="o">[</span>DYNAMIC<span class="o">]</span> Cf-Ray:<span class="o">[</span>882c9c85b89607ef-IAD<span class="o">]</span> Content-Type:<span class="o">[</span>text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8<span class="o">]</span> Date:<span class="o">[</span>Sun, <span class="m">12</span> May <span class="m">2024</span> 18:53:24 GMT<span class="o">]</span> Expires:<span class="o">[</span>Sun, <span class="m">12</span> May <span class="m">2024</span> 18:32:34 GMT<span class="o">]</span> Last-Modified:<span class="o">[</span>Thu, <span class="m">25</span> May <span class="m">2023</span> 01:50:43 GMT<span class="o">]</span> Nel:<span class="o">[</span><span class="o">{</span><span class="s2">&#34;success_fraction&#34;</span>:0,<span class="s2">&#34;report_to&#34;</span>:<span class="s2">&#34;cf-nel&#34;</span>,<span class="s2">&#34;max_age&#34;</span>:604800<span class="o">}</span><span class="o">]</span> Report-To:<span class="o">[</span><span class="o">{</span><span class="s2">&#34;endpoints&#34;</span>:<span class="o">[</span><span class="o">{</span><span class="s2">&#34;url&#34;</span>:<span class="s2">&#34;https:\/\/a.nel.cloudflare.com\/report\/v4?s=yTUiXIq4KveSdxOvi%2F2HhATI8MVyL%2BFESX6poW5BRilzSEVB%2Fvn3gMkDNuCvpCRmefSvVK8i%2FOAmWqqpu%2Bzo9MhqCQ4mjQNwnaFzvokAxXqCoJAVJ6CUrxTLjBlt&#34;</span><span class="o">}</span><span class="o">]</span>,<span class="s2">&#34;group&#34;</span>:<span class="s2">&#34;cf-nel&#34;</span>,<span class="s2">&#34;max_age&#34;</span>:604800<span class="o">}</span><span class="o">]</span> Server:<span class="o">[</span>cloudflare<span class="o">]</span> Vary:<span class="o">[</span>Accept-Encoding<span class="o">]</span> Via:<span class="o">[</span>1.1 varnish<span class="o">]</span> X-Cache:<span class="o">[</span>HIT<span class="o">]</span> X-Cache-Hits:<span class="o">[</span>0<span class="o">]</span> X-Fastly-Request-Id:<span class="o">[</span>54b300bdfa470e7a6ed26bae3c77efbbe5d54855<span class="o">]</span> X-Github-Request-Id:<span class="o">[</span>E256:4683B:1C05177:2274825:664108EA<span class="o">]</span> X-Proxy-Cache:<span class="o">[</span>MISS<span class="o">]</span> X-Served-By:<span class="o">[</span>cache-iad-kiad7000035-IAD<span class="o">]</span> X-Timer:<span class="o">[</span>S1715540005.768604,VS0,VE9<span class="o">]</span><span class="o">]</span> 0x14422c0 -1 <span class="o">[</span><span class="o">]</span> <span class="nb">false</span> <span class="nb">false</span> map<span class="o">[</span><span class="o">]</span> 0x1470000 &lt;nil&gt;<span class="o">}</span> &lt;nil&gt;
-</code></pre></div><p>Nice! Progress! The <code>fetch</code> wrapper works and we can make a request. Ok, fingers crossed, let&rsquo;s try an http server:</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
-	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8080&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprint</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, World!&#34;</span><span class="p">)</span>
-	<span class="p">}</span><span class="p">)</span><span class="p">)</span><span class="p">;</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
-		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
-	<span class="p">}</span>
-<span class="p">}</span>
-</code></pre></div><p>Let&rsquo;s run it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ deno run --allow-net --allow-read ./index.ts
-error: Top-level await promise never resolved
-await go.run<span class="o">(</span>inst.instance<span class="o">)</span><span class="p">;</span>
-^
-    at &lt;anonymous&gt; <span class="o">(</span>file:///Users/maxm/go/src/github.com/maxmcd/go-town/go-js/index.ts:5:1<span class="o">)</span>
-</code></pre></div><p>Weird. We don&rsquo;t see a panic or another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported. Let&rsquo;s move on.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">go</span> <span class="kr">as</span> <span class="nx">g</span> <span class="p">}</span> <span class="kr">from</span> <span class="s2">&#34;./wasm_exec.js&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">g</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">go</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">window</span><span class="p">.</span><span class="nx">Go</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">buf</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFileSync</span><span class="p">(</span><span class="s2">&#34;./main.wasm&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">inst</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">buf</span><span class="p">,</span> <span class="nx">go</span><span class="p">.</span><span class="nx">importObject</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">await</span> <span class="nx">go</span><span class="p">.</span><span class="nx">run</span><span class="p">(</span><span class="nx">inst</span><span class="p">.</span><span class="nx">instance</span><span class="p">);</span>
+</span></span></code></pre></div><p>We&rsquo;ll use the same Go script as before, but this time we&rsquo;ll compile with <code>GOOS=js</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="nv">GOOS</span><span class="o">=</span>js <span class="nv">GOARCH</span><span class="o">=</span>wasm  go build -o main.wasm ./main.go
+</span></span></code></pre></div><p>Let&rsquo;s run it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ ./compile.sh <span class="o">&amp;&amp;</span> deno run --allow-net --allow-read ./index.ts
+</span></span><span class="line"><span class="cl"><span class="p">&amp;</span><span class="o">{</span><span class="m">200</span> OK <span class="m">200</span>  <span class="m">0</span> <span class="m">0</span> map<span class="o">[</span>Access-Control-Allow-Origin:<span class="o">[</span>*<span class="o">]</span> Age:<span class="o">[</span>0<span class="o">]</span> Alt-Svc:<span class="o">[</span><span class="nv">h3</span><span class="o">=</span><span class="s2">&#34;:443&#34;</span><span class="p">;</span> <span class="nv">ma</span><span class="o">=</span>86400<span class="o">]</span> Cache-Control:<span class="o">[</span>max-age<span class="o">=</span>600<span class="o">]</span> Cf-Cache-Status:<span class="o">[</span>DYNAMIC<span class="o">]</span> Cf-Ray:<span class="o">[</span>882c9c85b89607ef-IAD<span class="o">]</span> Content-Type:<span class="o">[</span>text/html<span class="p">;</span> <span class="nv">charset</span><span class="o">=</span>utf-8<span class="o">]</span> Date:<span class="o">[</span>Sun, <span class="m">12</span> May <span class="m">2024</span> 18:53:24 GMT<span class="o">]</span> Expires:<span class="o">[</span>Sun, <span class="m">12</span> May <span class="m">2024</span> 18:32:34 GMT<span class="o">]</span> Last-Modified:<span class="o">[</span>Thu, <span class="m">25</span> May <span class="m">2023</span> 01:50:43 GMT<span class="o">]</span> Nel:<span class="o">[{</span><span class="s2">&#34;success_fraction&#34;</span>:0,<span class="s2">&#34;report_to&#34;</span>:<span class="s2">&#34;cf-nel&#34;</span>,<span class="s2">&#34;max_age&#34;</span>:604800<span class="o">}]</span> Report-To:<span class="o">[{</span><span class="s2">&#34;endpoints&#34;</span>:<span class="o">[{</span><span class="s2">&#34;url&#34;</span>:<span class="s2">&#34;https:\/\/a.nel.cloudflare.com\/report\/v4?s=yTUiXIq4KveSdxOvi%2F2HhATI8MVyL%2BFESX6poW5BRilzSEVB%2Fvn3gMkDNuCvpCRmefSvVK8i%2FOAmWqqpu%2Bzo9MhqCQ4mjQNwnaFzvokAxXqCoJAVJ6CUrxTLjBlt&#34;</span><span class="o">}]</span>,<span class="s2">&#34;group&#34;</span>:<span class="s2">&#34;cf-nel&#34;</span>,<span class="s2">&#34;max_age&#34;</span>:604800<span class="o">}]</span> Server:<span class="o">[</span>cloudflare<span class="o">]</span> Vary:<span class="o">[</span>Accept-Encoding<span class="o">]</span> Via:<span class="o">[</span>1.1 varnish<span class="o">]</span> X-Cache:<span class="o">[</span>HIT<span class="o">]</span> X-Cache-Hits:<span class="o">[</span>0<span class="o">]</span> X-Fastly-Request-Id:<span class="o">[</span>54b300bdfa470e7a6ed26bae3c77efbbe5d54855<span class="o">]</span> X-Github-Request-Id:<span class="o">[</span>E256:4683B:1C05177:2274825:664108EA<span class="o">]</span> X-Proxy-Cache:<span class="o">[</span>MISS<span class="o">]</span> X-Served-By:<span class="o">[</span>cache-iad-kiad7000035-IAD<span class="o">]</span> X-Timer:<span class="o">[</span>S1715540005.768604,VS0,VE9<span class="o">]]</span> 0x14422c0 -1 <span class="o">[]</span> <span class="nb">false</span> <span class="nb">false</span> map<span class="o">[]</span> 0x1470000 &lt;nil&gt;<span class="o">}</span> &lt;nil&gt;
+</span></span></code></pre></div><p>Nice! Progress! The <code>fetch</code> wrapper works and we can make a request. Ok, fingers crossed, let&rsquo;s try an http server:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;:8080&#34;</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprint</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello, World!&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}));</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nb">panic</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Let&rsquo;s run it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ deno run --allow-net --allow-read ./index.ts
+</span></span><span class="line"><span class="cl">error: Top-level await promise never resolved
+</span></span><span class="line"><span class="cl">await go.run<span class="o">(</span>inst.instance<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">^
+</span></span><span class="line"><span class="cl">    at &lt;anonymous&gt; <span class="o">(</span>file:///Users/maxm/go/src/github.com/maxmcd/go-town/go-js/index.ts:5:1<span class="o">)</span>
+</span></span></code></pre></div><p>Weird. We don&rsquo;t see a panic or another error, the script just breaks. After some digging I could not figure it out. Although going in this direction was a bit contrived, we know from googling that running a server is not supported. Let&rsquo;s move on.</p>
 <p>At this point we&rsquo;re likely going to have to write the server logic ourselves. We have a <code>fetch</code> wrapper, but nothing to take a server request and ferry it over to the Go side. We&rsquo;ll have to build that. If this already exists please tell me, I could not find any kind of library that would handle sending <code>Request</code> or <code>Response</code> back and forth between Go+WASM and js/ts.</p>
 <p>From here I think we have two options:</p>
 <ol>
@@ -647,39 +662,39 @@ await go.run<span class="o">(</span>inst.instance<span class="o">)</span><span c
 <h2 id="tinygo-and-wasi">Tinygo and WASI</h2>
 <p>Let&rsquo;s see if we can get a basic Tinygo WASM binary running in Deno.</p>
 <p>Here&rsquo;s our Go source:</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="c1">//export add
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">add</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
-	<span class="k">return</span> <span class="nx">a</span> <span class="o">+</span> <span class="nx">b</span>
-<span class="p">}</span>
-
-<span class="c1">// main is required for the `wasi` target, even if it isn&#39;t used.
-</span><span class="c1"></span><span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span><span class="p">}</span>
-</code></pre></div><p>And we&rsquo;re back using the WASI Deno lib again:</p>
-<div class="highlight"><pre class="chroma"><code class="language-tsx" data-lang="tsx"><span class="kr">import</span> <span class="nx">Context</span> <span class="nx">from</span> <span class="s2">&#34;https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts&#34;</span><span class="p">;</span>
-
-<span class="kr">const</span> <span class="nx">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Context</span><span class="p">(</span><span class="p">{</span>
-  <span class="nx">args</span>: <span class="kt">Deno.args</span><span class="p">,</span>
-  <span class="nx">env</span><span class="o">:</span> <span class="p">{</span><span class="p">}</span><span class="p">,</span>
-<span class="p">}</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">binary</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">module</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="nx">binary</span><span class="p">)</span><span class="p">;</span>
-<span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="p">{</span>
-  <span class="nx">wasi_snapshot_preview1</span>: <span class="kt">context.exports</span><span class="p">,</span>
-<span class="p">}</span><span class="p">)</span><span class="p">;</span>
-
-<span class="nx">context</span><span class="p">.</span><span class="nx">start</span><span class="p">(</span><span class="nx">instance</span><span class="p">)</span><span class="p">;</span>
-
-<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">43</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>Let&rsquo;s compile our WASM binary and then run it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">$ tinygo build -o main.wasm -target<span class="o">=</span>wasi .
-$ wasm-strip ./main.wasm
-$ deno run --allow-read ./index.ts
-<span class="m">11</span>
-<span class="m">64</span>
-</code></pre></div><p>Nice, we can add numbers and everything works.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//export add</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">add</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="nx">a</span> <span class="o">+</span> <span class="nx">b</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// main is required for the `wasi` target, even if it isn&#39;t used.</span>
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{}</span>
+</span></span></code></pre></div><p>And we&rsquo;re back using the WASI Deno lib again:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-tsx" data-lang="tsx"><span class="line"><span class="cl"><span class="kr">import</span> <span class="nx">Context</span> <span class="kr">from</span> <span class="s2">&#34;https://deno.land/std@0.206.0/wasi/snapshot_preview1.ts&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">context</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Context</span><span class="p">({</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">args</span>: <span class="kt">Deno.args</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">env</span><span class="o">:</span> <span class="p">{},</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">binary</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">module</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="nx">binary</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">instance</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">WebAssembly</span><span class="p">.</span><span class="nx">instantiate</span><span class="p">(</span><span class="nx">module</span><span class="p">,</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="nx">wasi_snapshot_preview1</span>: <span class="kt">context.exports</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">context</span><span class="p">.</span><span class="nx">start</span><span class="p">(</span><span class="nx">instance</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">instance</span><span class="p">.</span><span class="nx">exports</span><span class="p">.</span><span class="nx">add</span><span class="p">(</span><span class="mi">43</span><span class="p">,</span> <span class="mi">21</span><span class="p">));</span>
+</span></span></code></pre></div><p>Let&rsquo;s compile our WASM binary and then run it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">$ tinygo build -o main.wasm -target<span class="o">=</span>wasi .
+</span></span><span class="line"><span class="cl">$ wasm-strip ./main.wasm
+</span></span><span class="line"><span class="cl">$ deno run --allow-read ./index.ts
+</span></span><span class="line"><span class="cl"><span class="m">11</span>
+</span></span><span class="line"><span class="cl"><span class="m">64</span>
+</span></span></code></pre></div><p>Nice, we can add numbers and everything works.</p>
 <p>Now the hard part. When a request comes in we want to serialize the request and pass it over to Go code, then deserialize it and turn it into an <code>*http.Request</code>. In our Go HTTP handler we want the user to write to an <code>http.ResponseWriter</code> and have that be passed back over to the JS side so that we can turn it into a <code>Response</code> object. For simplicity we&rsquo;ll skip things like streaming requests and responses and just send the full request over and wait for the full response.</p>
 <p>One of the trickier parts of this for me is getting the bytes sent between each environment. When sending bytes over to Go/WASM we&rsquo;ll need to:</p>
 <ol>
@@ -695,43 +710,43 @@ $ deno run --allow-read ./index.ts
 </ol>
 <p>I have implemented this pattern a few times and it is never easy going, so this time I found this <a href="https://github.com/bots-garden/wasi-tinygo-js">helpful go/js library</a> that implements helper functions to send strings and bytes between Nodejs and Tinygo.</p>
 <p>With that in place I&rsquo;ll have a <code>callHandlerWithJson</code> function that I can can call with a WebAssembly instance:</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kd">function</span> <span class="nx">callHandlerWithJson</span><span class="p">(</span><span class="nx">instance</span>: <span class="kt">WebAssembly.Instance</span><span class="p">,</span> <span class="nx">payload</span>: <span class="kt">any</span><span class="p">)</span>
-</code></pre></div><p>On the Go side, I can call this function to register a handler that will accept the JSON bytes. We&rsquo;ll read the bytes, process the request and then return the JSON bytes of our response.</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="nf">setHandler</span><span class="p">(</span><span class="nx">function</span> <span class="kd">func</span><span class="p">(</span><span class="nx">param</span> <span class="p">[</span><span class="p">]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">(</span><span class="p">[</span><span class="p">]</span><span class="kt">byte</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span><span class="p">)</span>
-</code></pre></div><h2 id="draw-the-rest-of-the-owl">Draw the rest of the owl</h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kd">function</span> <span class="nx">callHandlerWithJson</span><span class="p">(</span><span class="nx">instance</span>: <span class="kt">WebAssembly.Instance</span><span class="p">,</span> <span class="nx">payload</span>: <span class="kt">any</span><span class="p">)</span>
+</span></span></code></pre></div><p>On the Go side, I can call this function to register a handler that will accept the JSON bytes. We&rsquo;ll read the bytes, process the request and then return the JSON bytes of our response.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nf">setHandler</span><span class="p">(</span><span class="nx">function</span> <span class="kd">func</span><span class="p">(</span><span class="nx">param</span> <span class="p">[]</span><span class="kt">byte</span><span class="p">)</span> <span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="kt">error</span><span class="p">))</span>
+</span></span></code></pre></div><h2 id="draw-the-rest-of-the-owl">Draw the rest of the owl</h2>
 <p>We&rsquo;re nearing our conclusion. Using the building blocks outlined above we can do everything we need. Let&rsquo;s depart from story mode and I&rsquo;ll show you how it all works.</p>
 <p>First, define your HTTP handler in Go. To do that you&rsquo;ll use a Go library I made called <a href="https://github.com/maxmcd/go-town/"><code>go-town</code></a>.</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;fmt&#34;</span>
-	<span class="s">&#34;net/http&#34;</span>
-
-	<span class="nx">gotown</span> <span class="s">&#34;github.com/maxmcd/go-town&#34;</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">gotown</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello from Deno and Tinygo 🤝&#34;</span><span class="p">)</span>
-	<span class="p">}</span><span class="p">)</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre></div><p>Compile it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">tinygo build -o main.wasm -target<span class="o">=</span>wasi
-wasm-strip ./main.wasm
-</code></pre></div><p>Now let&rsquo;s run it in Deno. I made a library in Val Town that takes a WASM binary and returns an HTTP handler:</p>
-<div class="highlight"><pre class="chroma"><code class="language-ts" data-lang="ts"><span class="kr">import</span> <span class="p">{</span> <span class="nx">wasmHandler</span> <span class="p">}</span> <span class="nx">from</span> <span class="s2">&#34;https://esm.town/v/maxm/tinygoHttp&#34;</span><span class="p">;</span>
-
-<span class="kr">const</span> <span class="nx">handler</span> <span class="o">=</span> <span class="nx">await</span> <span class="nx">wasmHandler</span><span class="p">(</span><span class="nx">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">;</span>
-<span class="nx">Deno</span><span class="p">.</span><span class="nx">serve</span><span class="p">(</span><span class="p">{</span> <span class="nx">port</span>: <span class="kt">8080</span> <span class="p">}</span><span class="p">,</span> <span class="nx">async</span> <span class="p">(</span><span class="nx">req</span><span class="p">)</span> <span class="o">=</span><span class="o">&gt;</span> <span class="p">{</span>
-  <span class="k">return</span> <span class="nx">handler</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span><span class="p">;</span>
-<span class="p">}</span><span class="p">)</span><span class="p">;</span>
-</code></pre></div><p>Now we run it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">deno run --allow-env --allow-read --allow-net ./index.ts
-
-<span class="c1"># in a separate terminal</span>
-$ curl localhost:8080
-Hello from Deno and Tinygo 🤝
-</code></pre></div><p>Nice!</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net/http&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">gotown</span> <span class="s">&#34;github.com/maxmcd/go-town&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">gotown</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello from Deno and Tinygo 🤝&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Compile it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">tinygo build -o main.wasm -target<span class="o">=</span>wasi
+</span></span><span class="line"><span class="cl">wasm-strip ./main.wasm
+</span></span></code></pre></div><p>Now let&rsquo;s run it in Deno. I made a library in Val Town that takes a WASM binary and returns an HTTP handler:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-ts" data-lang="ts"><span class="line"><span class="cl"><span class="kr">import</span> <span class="p">{</span> <span class="nx">wasmHandler</span> <span class="p">}</span> <span class="kr">from</span> <span class="s2">&#34;https://esm.town/v/maxm/tinygoHttp&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kr">const</span> <span class="nx">handler</span> <span class="o">=</span> <span class="k">await</span> <span class="nx">wasmHandler</span><span class="p">(</span><span class="k">await</span> <span class="nx">Deno</span><span class="p">.</span><span class="nx">readFile</span><span class="p">(</span><span class="s2">&#34;main.wasm&#34;</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="nx">Deno</span><span class="p">.</span><span class="nx">serve</span><span class="p">({</span> <span class="nx">port</span>: <span class="kt">8080</span> <span class="p">},</span> <span class="kr">async</span> <span class="p">(</span><span class="nx">req</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="nx">handler</span><span class="p">(</span><span class="nx">req</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">});</span>
+</span></span></code></pre></div><p>Now we run it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">deno run --allow-env --allow-read --allow-net ./index.ts
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># in a separate terminal</span>
+</span></span><span class="line"><span class="cl">$ curl localhost:8080
+</span></span><span class="line"><span class="cl">Hello from Deno and Tinygo 🤝
+</span></span></code></pre></div><p>Nice!</p>
 <p>Here&rsquo;s the full sequence of events:</p>
 <ol>
 <li>When a request comes in we turn the <code>Request</code> object into JSON and <a href="https://www.val.town/v/maxm/tinygoHttp?v=22#L94-99">send it over to the WebAssembly binary</a>.</li>
@@ -756,35 +771,35 @@ Hello from Deno and Tinygo 🤝
 </ol>
 <p>Here&rsquo;s all those pieces working together:</p>
 <p>We&rsquo;ll start with a slightly modified version of our Go HTTP service.</p>
-<div class="highlight"><pre class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
-
-<span class="kn">import</span> <span class="p">(</span>
-	<span class="s">&#34;fmt&#34;</span>
-	<span class="s">&#34;net/http&#34;</span>
-
-	<span class="nx">gotown</span> <span class="s">&#34;github.com/maxmcd/go-town&#34;</span>
-<span class="p">)</span>
-
-<span class="kd">func</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span> <span class="p">{</span>
-	<span class="nx">gotown</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
-		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello from Val Town and Tinygo 🤝&#34;</span><span class="p">)</span>
-	<span class="p">}</span><span class="p">)</span><span class="p">)</span>
-<span class="p">}</span>
-</code></pre></div><p>And now we run our script to compile and upload it:</p>
-<div class="highlight"><pre class="chroma"><code class="language-text" data-lang="text">$ deno run --allow-net --allow-run --allow-read \
-    &#34;https://esm.town/v/maxm/compileAndUploadTinygoWasm?v=58&#34;
-Compliation complete
-Running wasm-strip main.wasm
-
-Copy the following into a Val Town HTTP Val:
-
-import { wasmHandler } from &#34;https://esm.town/v/maxm/tinygoHttp&#34;;
-const resp = await fetch(&#34;https://maxm-wasmblobhost.web.val.run/e5vpzt253pv5jxqfmygo7nytl5uvyn5c.wasm&#34;);
-const handler = await wasmHandler(new Uint8Array(await resp.arrayBuffer()));
-export default async function(req: Request): Promise&lt;Response&gt; {
-  return handler(req);
-}
-</code></pre></div><p>You can see the WASM binary uploaded here: <a href="https://maxm-wasmblobhost.web.val.run/">https://maxm-wasmblobhost.web.val.run/</a></p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="cl">	<span class="s">&#34;net/http&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="nx">gotown</span> <span class="s">&#34;github.com/maxmcd/go-town&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">gotown</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;Hello from Val Town and Tinygo 🤝&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>And now we run our script to compile and upload it:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">$ deno run --allow-net --allow-run --allow-read \
+</span></span><span class="line"><span class="cl">    &#34;https://esm.town/v/maxm/compileAndUploadTinygoWasm?v=58&#34;
+</span></span><span class="line"><span class="cl">Compliation complete
+</span></span><span class="line"><span class="cl">Running wasm-strip main.wasm
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Copy the following into a Val Town HTTP Val:
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">import { wasmHandler } from &#34;https://esm.town/v/maxm/tinygoHttp&#34;;
+</span></span><span class="line"><span class="cl">const resp = await fetch(&#34;https://maxm-wasmblobhost.web.val.run/e5vpzt253pv5jxqfmygo7nytl5uvyn5c.wasm&#34;);
+</span></span><span class="line"><span class="cl">const handler = await wasmHandler(new Uint8Array(await resp.arrayBuffer()));
+</span></span><span class="line"><span class="cl">export default async function(req: Request): Promise&lt;Response&gt; {
+</span></span><span class="line"><span class="cl">  return handler(req);
+</span></span><span class="line"><span class="cl">}
+</span></span></code></pre></div><p>You can see the WASM binary uploaded here: <a href="https://maxm-wasmblobhost.web.val.run/">https://maxm-wasmblobhost.web.val.run/</a></p>
 <p>I pasted the resulting code into an HTTP Val. You can see everything working here: <a href="https://www.val.town/v/maxm/aquamarinePiranha">https://www.val.town/v/maxm/aquamarinePiranha</a></p>
 <iframe width="100%" height="400px" src="https://www.val.town/embed/maxm/aquamarinePiranha" title="Val Town" frameborder="0" allow="web-share" allowfullscreen></iframe>
 <h2 id="conclusion">Conclusion</h2>
@@ -798,8 +813,9 @@ export default async function(req: Request): Promise&lt;Response&gt; {
 			<pubDate>Sun, 14 Nov 2021 21:21:13 +0000</pubDate>
 			
 			<guid>https://maxmcd.com/posts/bramble/</guid>
-			<description>About a year and a half ago I decided to start working on a build system inspired by Nix called Bramble. Andrew Chambers had launched hermes and I was messing around with starlark-go a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.
-Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.</description>
+			<description>&lt;p&gt;&lt;img src=&#34;https://github.com/maxmcd/bramble/raw/main/notes/animated.svg&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;About a year and a half ago I decided to start working on a build system inspired by Nix called &lt;a href=&#34;https://github.com/maxmcd/bramble&#34;&gt;Bramble&lt;/a&gt;. Andrew Chambers had launched &lt;a href=&#34;https://github.com/andrewchambers/hermes&#34;&gt;hermes&lt;/a&gt; and I was messing around with &lt;a href=&#34;https://github.com/google/starlark-go&#34;&gt;starlark-go&lt;/a&gt; a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.&lt;/p&gt;
+&lt;p&gt;Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.&lt;/p&gt;</description>
 			<content type="html"><![CDATA[<p><img src="https://github.com/maxmcd/bramble/raw/main/notes/animated.svg" alt=""></p>
 <p>About a year and a half ago I decided to start working on a build system inspired by Nix called <a href="https://github.com/maxmcd/bramble">Bramble</a>. Andrew Chambers had launched <a href="https://github.com/andrewchambers/hermes">hermes</a> and I was messing around with <a href="https://github.com/google/starlark-go">starlark-go</a> a bit and it seemed like writing a Nix-inspired functional build system with Starlark would be a nice way to better understand how they work.</p>
 <p>Bramble is no longer a test project, and has matured into something that I think has a few interesting ideas worth sharing.</p>
@@ -811,25 +827,25 @@ Bramble is no longer a test project, and has matured into something that I think
 <p><a href="https://github.com/maxmcd/bramble#installation">Installation instructions</a> and a <a href="https://github.com/maxmcd/bramble#hello-world">hello world</a> are available in the project readme.</p>
 <p>Most Bramble functionality will not work unless Bramble is run from within a project. A project has a <code>bramble.toml</code> where the package name and version are configured along with any dependencies. A <code>bramble.lock</code> is used to track various metadata for reproducibility.</p>
 <p>Here is Bramble&rsquo;s bramble.toml:</p>
-<div class="highlight"><pre class="chroma"><code class="language-toml" data-lang="toml"><span class="p">[</span><span class="nx">package</span><span class="p">]</span>
-<span class="nx">name</span> <span class="p">=</span> <span class="s2">&#34;github.com/maxmcd/bramble&#34;</span>
-<span class="nx">version</span> <span class="p">=</span> <span class="s2">&#34;0.0.2&#34;</span>
-
-<span class="p">[</span><span class="nx">dependencies</span><span class="p">]</span>
-<span class="s2">&#34;github.com/maxmcd/busybox&#34;</span> <span class="p">=</span> <span class="s2">&#34;0.0.2&#34;</span>
-</code></pre></div><p>Once you have a project you&rsquo;ll add files that end with <code>.bramble</code>, and fill them with a language that looks like Python, but <a href="https://github.com/google/starlark-go/blob/master/doc/spec.md">it&rsquo;s not</a>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-toml" data-lang="toml"><span class="line"><span class="cl"><span class="p">[</span><span class="nx">package</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="nx">name</span> <span class="p">=</span> <span class="s2">&#34;github.com/maxmcd/bramble&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nx">version</span> <span class="p">=</span> <span class="s2">&#34;0.0.2&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">[</span><span class="nx">dependencies</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;github.com/maxmcd/busybox&#34;</span> <span class="p">=</span> <span class="s2">&#34;0.0.2&#34;</span>
+</span></span></code></pre></div><p>Once you have a project you&rsquo;ll add files that end with <code>.bramble</code>, and fill them with a language that looks like Python, but <a href="https://github.com/google/starlark-go/blob/master/doc/spec.md">it&rsquo;s not</a>.</p>
 <p>Here&rsquo;s some example code:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">load</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">github.com/maxmcd/bramble/tests/simple/simple</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">load</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">github.com/maxmcd/bramble/lib/nix-seed</span><span class="s2">&#34;</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">print_simple</span><span class="p">(</span><span class="p">)</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">run</span><span class="p">(</span><span class="n">simple</span><span class="o">.</span><span class="n">simple</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="sa"></span><span class="s2">&#34;</span><span class="s2">simple</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">hidden_paths</span><span class="o">=</span><span class="p">[</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">/</span><span class="s2">&#34;</span><span class="p">]</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">bash</span><span class="p">(</span><span class="p">)</span><span class="p">:</span>
-    <span class="k">return</span> <span class="n">run</span><span class="p">(</span><span class="n">seed</span><span class="o">.</span><span class="n">stdenv</span><span class="p">(</span><span class="p">)</span><span class="p">,</span> <span class="sa"></span><span class="s2">&#34;</span><span class="s2">bash</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">read_only_paths</span><span class="o">=</span><span class="p">[</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">./</span><span class="s2">&#34;</span><span class="p">]</span><span class="p">)</span>
-</code></pre></div><p>If I configured the dependencies and added that code to a file called <code>example.bramble</code> I could do the following:</p>
-<pre><code>$ bramble run ./example:bash
-bramble path directory doesn't exist, creating
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">load</span><span class="p">(</span><span class="s2">&#34;github.com/maxmcd/bramble/tests/simple/simple&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">load</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="s2">&#34;github.com/maxmcd/bramble/lib/nix-seed&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">print_simple</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">run</span><span class="p">(</span><span class="n">simple</span><span class="o">.</span><span class="n">simple</span><span class="p">(),</span> <span class="s2">&#34;simple&#34;</span><span class="p">,</span> <span class="n">hidden_paths</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;/&#34;</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">bash</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">run</span><span class="p">(</span><span class="n">seed</span><span class="o">.</span><span class="n">stdenv</span><span class="p">(),</span> <span class="s2">&#34;bash&#34;</span><span class="p">,</span> <span class="n">read_only_paths</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;./&#34;</span><span class="p">])</span>
+</span></span></code></pre></div><p>If I configured the dependencies and added that code to a file called <code>example.bramble</code> I could do the following:</p>
+<pre tabindex="0"><code>$ bramble run ./example:bash
+bramble path directory doesn&#39;t exist, creating
 ✔ busybox-x86_64.tar.gz - 394.546982ms
 ✔ busybox - 85.373221ms
 ✔ url_fetcher.tar.gz - 506.919852ms
@@ -845,7 +861,7 @@ $ ls
 bramble.toml bramble.lock  example.bramble
 
 $ touch foo
-touch: cannot touch 'foo': Read-only file system
+touch: cannot touch &#39;foo&#39;: Read-only file system
 </code></pre><p>Here Bramble is building the necessary dependencies to run <code>bash</code>. Once that&rsquo;s done <code>bash</code> is run but with a read-only view of the project filesystem. The <code>bash</code> process is also sandboxed from the rest of the filesystem by default, and can only read files within the project.</p>
 <p>Once a project is set up you can also run a remote package and it will be added to the project as a dependency. Running <code>bramble run github.com/maxmcd/busybox:busybox ash</code> in a new project fetches the <code>github.com/maxmcd/busybox</code> from a remote cache, adds it as a dependency to <code>bramble.toml</code> and runs the <code>ash</code> executable in a sandbox.</p>
 <h2 id="how-is-it-different-from-nix">How is it different from Nix?</h2>
@@ -879,8 +895,8 @@ touch: cannot touch 'foo': Read-only file system
 			<pubDate>Mon, 29 Jun 2020 01:29:25 +0000</pubDate>
 			
 			<guid>https://maxmcd.com/posts/strategies-for-binary-relocation/</guid>
-			<description>I&amp;rsquo;m currently writing a toy Nix/Guix called Bramble to learn more about the inner workings of both systems. One of the features that I wanted to include in my version was &amp;ldquo;binary relocation&amp;rdquo;.
-Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a simple nix Derivation you&amp;rsquo;ll see that these paths are hardcoded directly in the file.</description>
+			<description>&lt;p&gt;I&amp;rsquo;m currently writing a toy Nix/Guix called &lt;a href=&#34;github.com/maxmcd/bramble&#34;&gt;Bramble&lt;/a&gt; to learn more about the inner workings of both systems. One of the features that I wanted to include in my version was &amp;ldquo;binary relocation&amp;rdquo;.&lt;/p&gt;
+&lt;p&gt;Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a &lt;a href=&#34;https://gist.github.com/maxmcd/d98710a0e26daaff37c565da599f5d76&#34;&gt;simple nix Derivation&lt;/a&gt; you&amp;rsquo;ll see that these paths are hardcoded directly in the file. This is an important component of Nix. Instead of searching for the default shared libraries on a system nix-built binaries are patched to only include the specific libraries they depend on. This helps ensure correctness but also means that the binary must know exactly where to look for the shared lib. Hardcoding a library path to a fixed known location like &lt;code&gt;/nix/store/zqi5prhap0qh6r4nkghnibbmkgn7sczf-libogg-1.3.4/lib/&lt;/code&gt; is an elegant way to get this done.&lt;/p&gt;</description>
 			<content type="html"><![CDATA[<p>I&rsquo;m currently writing a toy Nix/Guix called <a href="github.com/maxmcd/bramble">Bramble</a> to learn more about the inner workings of both systems. One of the features that I wanted to include in my version was &ldquo;binary relocation&rdquo;.</p>
 <p>Both Nix and Guix have hardcoded store paths that are baked into all the outputs that they produce. If we take a look at part of a <a href="https://gist.github.com/maxmcd/d98710a0e26daaff37c565da599f5d76">simple nix Derivation</a> you&rsquo;ll see that these paths are hardcoded directly in the file. This is an important component of Nix. Instead of searching for the default shared libraries on a system nix-built binaries are patched to only include the specific libraries they depend on. This helps ensure correctness but also means that the binary must know exactly where to look for the shared lib. Hardcoding a library path to a fixed known location like <code>/nix/store/zqi5prhap0qh6r4nkghnibbmkgn7sczf-libogg-1.3.4/lib/</code> is an elegant way to get this done.</p>
 <p>So what is binary relocation? If Nix supported binary relocation it would support moving Nix artifacts to a new location, somewhere that is not <code>/nix/store</code>. Generally, nix doesn&rsquo;t support this. You can take advantage of <a href="https://github.com/NixOS/nix/issues/1971#issuecomment-372542326">workarounds</a> to fake it, but when nix is running it must think that <code>/nix/store</code> is the place to check for things.</p>
@@ -896,20 +912,19 @@ Both Nix and Guix have hardcoded store paths that are baked into all the outputs
 <p>The <a href="https://github.com/spack/spack">spack</a> build tool support binary relocation: <a href="https://spack.readthedocs.io/en/latest/binary_caches.html#relocation">https://spack.readthedocs.io/en/latest/binary_caches.html#relocation</a></p>
 <p>You can read through the implementation <a href="https://github.com/spack/spack/blob/f5467957bca49ca612cfc32710ed2ca8a943583d/lib/spack/spack/relocate.py">here</a>. Spack just goes through and uses <code>pathelf</code> and <code>install_name_tool</code> to rewrite the applicable paths. This is interesting, and might work, but for the moment seems like it would miss various other paths within scripts or configuration. Spack mentions this:</p>
 <blockquote>
-<p>However, many packages compile paths into binary artifacts directly. In such cases, the build instructions of this package would need to be adjusted for better re-locatability.</p>
-</blockquote>
+<p>However, many packages compile paths into binary artifacts directly. In such cases, the build instructions of this package would need to be adjusted for better re-locatability.</p></blockquote>
 <p>This might be worth exploring at a later date, maybe testing against various packages as they&rsquo;re build. For the moment it seems like a non-starter because of the difficulties of trivially replacing paths that are not in binaries.</p>
 <h2 id="pad-the-path">Pad the path</h2>
 <p>One interesting observation here <a href="https://github.com/NixOS/nix/issues/1971">https://github.com/NixOS/nix/issues/1971</a> what that <code>/nix/store/</code> and <code>/tmp/foo///</code> are both valid paths of the same length. If you could guarantee that your path was always shorter than a certain length you could just pad the location with slashes. Or, if the path is longer, you could store everything in a short path symlink the the longer path to that path.</p>
 <p>This is roughly the solution I ended up going with. Instead of using something like <code>/nix/store</code> I would assume the user can install their store within their home directory. The path would then be something like <code>/home/maxm/.bramble/store</code> or <code>/Users/maxm/.bramble/store/</code> for macOS. Now, instead of using &ldquo;store&rdquo; we rename that folder so that the length of the path is always the same. Here are some examples:</p>
-<div class="highlight"><pre class="chroma"><code class="language-bash" data-lang="bash">/home/maxm/.bramble/soooooooooooooooooooooooooooo/
-/Users/maxm/.bramble/sooooooooooooooooooooooooooo/
-
-<span class="c1"># Linux/OpenBSD usernames can&#39;t be longer than 32 characters</span>
-/home/00000000001111111111000000000011/.bramble/s/
-<span class="c1"># Darwin/macOS has a limit of 20</span>
-/Users/00000000001111111111/.bramble/sooooooooooo/
-</code></pre></div><p>This way, the path length is always the same, so it&rsquo;s easy for us to find it within build outputs and patch it to be something else. Changing a users username or changing the store location will now mean all build outputs need to be patched, but there is at least a clear path to do so.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">/home/maxm/.bramble/soooooooooooooooooooooooooooo/
+</span></span><span class="line"><span class="cl">/Users/maxm/.bramble/sooooooooooooooooooooooooooo/
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># Linux/OpenBSD usernames can&#39;t be longer than 32 characters</span>
+</span></span><span class="line"><span class="cl">/home/00000000001111111111000000000011/.bramble/s/
+</span></span><span class="line"><span class="cl"><span class="c1"># Darwin/macOS has a limit of 20</span>
+</span></span><span class="line"><span class="cl">/Users/00000000001111111111/.bramble/sooooooooooo/
+</span></span></code></pre></div><p>This way, the path length is always the same, so it&rsquo;s easy for us to find it within build outputs and patch it to be something else. Changing a users username or changing the store location will now mean all build outputs need to be patched, but there is at least a clear path to do so.</p>
 <h2 id="summary">Summary</h2>
 <p>I&rsquo;m going to try out this path padding thing. Part of the reason I wrote up this post is because this feels like a ridiculous direction to go down. What do you think? Are there ways to get binary relocation that I&rsquo;m missing? Should I spend more time on relative paths and re-patching? Are there pieces here I&rsquo;m not thinking about?</p>
 ]]></content>
@@ -921,81 +936,81 @@ Both Nix and Guix have hardcoded store paths that are baked into all the outputs
 			<pubDate>Sat, 01 Feb 2020 22:32:00 +0000</pubDate>
 			
 			<guid>https://maxmcd.com/posts/star/</guid>
-			<description>tl:dr star is a python(ish) programming environment that lets you call Go library functions. click down to the repl if you&amp;rsquo;d just like to play around
-Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&amp;rsquo;s not turing complete (no unbounded loops), it doesn&amp;rsquo;t have classes or higher level abstractions, it&amp;rsquo;s also deterministic and is somewhat safe to run untrusted user input.</description>
+			<description>&lt;p&gt;&lt;em&gt;&lt;strong&gt;tl:dr&lt;/strong&gt; &lt;a href=&#34;https://github.com/embly/star&#34;&gt;&lt;strong&gt;star&lt;/strong&gt;&lt;/a&gt; is a python(ish) programming environment that lets you call Go library functions. &lt;a href=&#34;#repl&#34;&gt;click down to the repl&lt;/a&gt; if you&amp;rsquo;d just like to play around&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/bazelbuild/starlark&#34;&gt;Starlark&lt;/a&gt; is Google&amp;rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&amp;rsquo;s not turing complete (no unbounded loops), it doesn&amp;rsquo;t have classes or higher level abstractions, it&amp;rsquo;s also deterministic and is somewhat safe to run untrusted user input.&lt;/p&gt;</description>
 			<content type="html"><![CDATA[<p><em><strong>tl:dr</strong> <a href="https://github.com/embly/star"><strong>star</strong></a> is a python(ish) programming environment that lets you call Go library functions. <a href="#repl">click down to the repl</a> if you&rsquo;d just like to play around</em></p>
 <p><a href="https://github.com/bazelbuild/starlark">Starlark</a> is Google&rsquo;s custom subset of Python that it uses as a configuration language with Bazel. I started looking into it a little because it has some interesting characteristics. It&rsquo;s not turing complete (no unbounded loops), it doesn&rsquo;t have classes or higher level abstractions, it&rsquo;s also deterministic and is somewhat safe to run untrusted user input.</p>
 <p>Although somewhat limited it felt like it might make a good candidate for a serverless function runtime that could be added to <a href="https://embly.run/">embly</a>. Easier to sandbox, could mock out pieces of the python standard library, maybe provide just enough functionality for it to be useful. I also thought you might be able to identify the deterministic blocks of code and replace them with the static result on subsequent runs. Potentially exciting stuff!</p>
 <p>I used <a href="https://github.com/google/starlark-go">starlark-go</a> to get started and pretty quickly had this demo up and running:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">content_type</span><span class="p">)</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Hello World</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="p">]</span><span class="p">)</span> <span class="o">+</span> <span class="sa"></span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
-
-    <span class="k">return</span>
-</code></pre></div><p>The server parses the file, starts a web server, takes the <code>hello</code> function and passes the <code>http.ResponseWriter</code> and <code>http.Request</code> over to the <strike>python</strike> starlark side of things on every http request. From there I could add attributes to pass over things like the <code>path</code> and <code>content_type</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">content_type</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">req</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">w</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Hello World</span><span class="se">\n</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)])</span> <span class="o">+</span> <span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span>
+</span></span></code></pre></div><p>The server parses the file, starts a web server, takes the <code>hello</code> function and passes the <code>http.ResponseWriter</code> and <code>http.Request</code> over to the <strike>python</strike> starlark side of things on every http request. From there I could add attributes to pass over things like the <code>path</code> and <code>content_type</code>.</p>
 <p>Starlark doesn&rsquo;t have exception handling, so I add a Go error type and passed that over as well. This ends up being almost as verbose as Go, but without typed functions it does allow for a little more flexibility:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">handle_err</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
-        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="sa"></span><span class="s2">&#34;</span><span class="s2">error</span><span class="s2">&#34;</span> <span class="ow">and</span> <span class="n">a</span><span class="p">:</span>
-            <span class="k">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">stacktrace</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">args</span>
-
-<span class="n">foo</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">handle_err</span><span class="p">(</span><span class="n">function_call</span><span class="p">(</span><span class="p">)</span><span class="p">)</span>
-</code></pre></div><p>At this point I got a little more interested in continuing to cram Go functionality into this scripting language. The <a href="https://github.com/google/starlark-go">starlark-go</a> implementation is really wonderful and it was quite easy to extend.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">handle_err</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&#34;error&#34;</span> <span class="ow">and</span> <span class="n">a</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">stacktrace</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">args</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">foo</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">handle_err</span><span class="p">(</span><span class="n">function_call</span><span class="p">())</span>
+</span></span></code></pre></div><p>At this point I got a little more interested in continuing to cram Go functionality into this scripting language. The <a href="https://github.com/google/starlark-go">starlark-go</a> implementation is really wonderful and it was quite easy to extend.</p>
 <p>In talking to my coworker I wondered if you could pull in lots of Go functionality, we sketched up something like this:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">net</span> <span class="kn">import</span> <span class="n">http</span>
-<span class="kn">from</span> <span class="nn">star</span> <span class="kn">import</span> <span class="n">chan</span><span class="p">,</span> <span class="n">go</span>
-
-<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">hello</span><span class="s2">&#34;</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
-        <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-
-    <span class="n">c</span> <span class="o">=</span> <span class="n">chan</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">go</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
-    <span class="n">c</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="p">)</span>
-</code></pre></div><p>From a syntax standpoint it seems like this would be possible. Starlark also has first-class support for running separate chunks of code in parallel (globals are immutable, which helps), so leveraging Go&rsquo;s concurrency model didn&rsquo;t seem too difficult either.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="kn">import</span> <span class="nn">time</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">net</span> <span class="kn">import</span> <span class="n">http</span>
+</span></span><span class="line"><span class="cl"><span class="kn">from</span> <span class="nn">star</span> <span class="kn">import</span> <span class="n">chan</span><span class="p">,</span> <span class="n">go</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">c</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="s2">&#34;hello&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">c</span> <span class="o">=</span> <span class="n">chan</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">go</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">c</span><span class="o">.</span><span class="n">next</span><span class="p">()</span>
+</span></span></code></pre></div><p>From a syntax standpoint it seems like this would be possible. Starlark also has first-class support for running separate chunks of code in parallel (globals are immutable, which helps), so leveraging Go&rsquo;s concurrency model didn&rsquo;t seem too difficult either.</p>
 <p>After a little more messing around, most of that sketch has been implemented: <a href="https://github.com/embly/star">https://github.com/embly/star</a></p>
 <p><a href="https://github.com/embly/star"><strong>star</strong></a> is a python(ish) programming environment that lets you call Go library functions. It is very fragile and shouldn&rsquo;t be taken seriously, but it&rsquo;s very fun to play with.</p>
 <p>Here&rsquo;s what that sketch ended up looking like:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">net/http</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">ioutil</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">io/ioutil</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">sync</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">sync</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">star</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">star</span><span class="s2">&#34;</span><span class="p">)</span>
-<span class="n">time</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">time</span><span class="s2">&#34;</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">get_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
-        <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-    <span class="n">b</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">ioutil</span><span class="o">.</span><span class="n">ReadAll</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">Body</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
-        <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-    <span class="n">body</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">star</span><span class="o">.</span><span class="n">bytes_to_string</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
-        <span class="k">return</span> <span class="k">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
-    <span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Second</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="n">wg</span><span class="o">.</span><span class="n">Done</span><span class="p">(</span><span class="p">)</span>
-
-
-<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">wg</span> <span class="o">=</span> <span class="n">sync</span><span class="o">.</span><span class="n">WaitGroup</span><span class="p">(</span><span class="p">)</span>
-    <span class="n">wg</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-    <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
-        <span class="sa"></span><span class="s2">&#34;</span><span class="s2">https://www.embly.run/hello/</span><span class="s2">&#34;</span><span class="p">,</span>
-    <span class="p">]</span>
-    <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
-        <span class="n">star</span><span class="o">.</span><span class="n">go</span><span class="p">(</span><span class="n">get_url</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">)</span>
-    <span class="n">wg</span><span class="o">.</span><span class="n">Wait</span><span class="p">(</span><span class="p">)</span>
-</code></pre></div><p>Really trippy to look at if you&rsquo;ve written python and Go. A few notes:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;net/http&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">ioutil</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;io/ioutil&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">sync</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;sync&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">star</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;star&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="n">time</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;time&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">get_url</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="n">resp</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">http</span><span class="o">.</span><span class="n">Get</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">b</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">ioutil</span><span class="o">.</span><span class="n">ReadAll</span><span class="p">(</span><span class="n">resp</span><span class="o">.</span><span class="n">Body</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">body</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">star</span><span class="o">.</span><span class="n">bytes_to_string</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">time</span><span class="o">.</span><span class="n">Sleep</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">Second</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">wg</span><span class="o">.</span><span class="n">Done</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="cl">    <span class="n">wg</span> <span class="o">=</span> <span class="n">sync</span><span class="o">.</span><span class="n">WaitGroup</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="n">wg</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">urls</span> <span class="o">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="s2">&#34;https://www.embly.run/hello/&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">urls</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">star</span><span class="o">.</span><span class="n">go</span><span class="p">(</span><span class="n">get_url</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">wg</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">wg</span><span class="o">.</span><span class="n">Wait</span><span class="p">()</span>
+</span></span></code></pre></div><p>Really trippy to look at if you&rsquo;ve written python and Go. A few notes:</p>
 <ul>
 <li>starlark doesn&rsquo;t support python&rsquo;s import syntax, so I went with a <code>require</code> function</li>
 <li><code>star.go</code> spawns a goroutine and it works! adding channels wouldn&rsquo;t be too hard either</li>
@@ -1003,16 +1018,16 @@ Starlark is Google&amp;rsquo;s custom subset of Python that it uses as a configu
 </ul>
 <p>I&rsquo;ve only converted a small subset of the Go stdlib, you can see the list of available components here: <a href="https://github.com/embly/star/blob/master/src/packages.go">https://github.com/embly/star/blob/master/src/packages.go</a></p>
 <p>I also got a callback function working so that go/python servers work as well:</p>
-<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">net/http</span><span class="s2">&#34;</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span><span class="p">:</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">WriteHeader</span><span class="p">(</span><span class="mi">201</span><span class="p">)</span>
-    <span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">hello world</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
-
-<span class="n">http</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">/hello</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
-
-<span class="n">http</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="sa"></span><span class="s2">&#34;</span><span class="s2">:8080</span><span class="s2">&#34;</span><span class="p">,</span> <span class="n">http</span><span class="o">.</span><span class="n">Handler</span><span class="p">)</span>
-</code></pre></div><p>The coolest part is that this is all pure Go, so we can also run all of it in webassembly. Here&rsquo;s <a href="https://embly.github.io/star/">a repl</a>, script away:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">http</span> <span class="o">=</span> <span class="n">require</span><span class="p">(</span><span class="s2">&#34;net/http&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">req</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="n">w</span><span class="o">.</span><span class="n">WriteHeader</span><span class="p">(</span><span class="mi">201</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">w</span><span class="o">.</span><span class="n">Write</span><span class="p">(</span><span class="s2">&#34;hello world</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">http</span><span class="o">.</span><span class="n">HandleFunc</span><span class="p">(</span><span class="s2">&#34;/hello&#34;</span><span class="p">,</span> <span class="n">hello</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">http</span><span class="o">.</span><span class="n">ListenAndServe</span><span class="p">(</span><span class="s2">&#34;:8080&#34;</span><span class="p">,</span> <span class="n">http</span><span class="o">.</span><span class="n">Handler</span><span class="p">)</span>
+</span></span></code></pre></div><p>The coolest part is that this is all pure Go, so we can also run all of it in webassembly. Here&rsquo;s <a href="https://embly.github.io/star/">a repl</a>, script away:</p>
 <iframe id="repl" style="width: 100%; height: 400px;" frameborder=0 src="https://embly.github.io/star/"></iframe>
 <p>Or install with <code>go get github.com/embly/star/cmd/star</code></p>
 <h4 id="closing-notes">Closing notes</h4>

@@ -1,26 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>node on Max McDonnell</title>
+    <title>Node on Max McDonnell</title>
     <link>https://maxmcd.com/tags/node/</link>
-    <description>Recent content in node on Max McDonnell</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Node on Max McDonnell</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Fri, 12 Jul 2024 00:00:00 +0000</lastBuildDate>
-    
-	<atom:link href="https://maxmcd.com/tags/node/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Fri, 19 Jul 2024 10:13:20 -0400</lastBuildDate>
+    <atom:link href="https://maxmcd.com/tags/node/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Can We Improve Process Per Request Performance in Node</title>
       <link>https://maxmcd.com/posts/process-per-request-performance/</link>
       <pubDate>Fri, 12 Jul 2024 00:00:00 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/process-per-request-performance/</guid>
-      <description>table code { background-color: initial } table td, table th { padding: 0.5rem }  How fast can an HTTP server in Node run if we spawn a process for every request?
-import { spawn } from &amp;#34;node:child_process&amp;#34;; import http from &amp;#34;node:http&amp;#34;; http .createServer((req, res) =&amp;gt; spawn(&amp;#34;echo&amp;#34;, [&amp;#34;hi&amp;#34;]).stdout.pipe(res)) .listen(8001); You should avoid spawning a new process for every HTTP request if at all possible. Creating a new process or thread is expensive and could easily become your core bottleneck.</description>
+      <description>&lt;style&gt;&#xA;    table code { background-color: initial }&#xA;    table td, table th { padding: 0.5rem }&#xA;&lt;/style&gt;&#xA;&lt;p&gt;How fast can an HTTP server in Node run if we spawn a process for every request?&lt;/p&gt;&#xA;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kr&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;{&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;spawn&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;node:child_process&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kr&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;from&lt;/span&gt; &lt;span class=&#34;s2&#34;&gt;&amp;#34;node:http&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nx&#34;&gt;http&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;createServer&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;((&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;req&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;res&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&#34;nx&#34;&gt;spawn&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;echo&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;hi&amp;#34;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]).&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;stdout&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;pipe&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;res&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;))&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;nx&#34;&gt;listen&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;8001&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;&#xA;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;You should avoid spawning a new process for every HTTP request if at all&#xA;possible. Creating a new process or thread is expensive and could easily become&#xA;your core bottleneck. At &lt;a href=&#34;https://val.town&#34;&gt;Val Town&lt;/a&gt; there are many request&#xA;types where we spawn a new process to handle the request. While we&amp;rsquo;re working to&#xA;reduce this, it is likely that we&amp;rsquo;ll always have some requests that spawn a&#xA;process, and we&amp;rsquo;d like them to be fast.&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>

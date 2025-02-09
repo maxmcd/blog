@@ -1,26 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>val.town on Max McDonnell</title>
+    <title>Val.town on Max McDonnell</title>
     <link>https://maxmcd.com/tags/val.town/</link>
-    <description>Recent content in val.town on Max McDonnell</description>
-    <generator>Hugo -- gohugo.io</generator>
+    <description>Recent content in Val.town on Max McDonnell</description>
+    <generator>Hugo</generator>
     <language>en-us</language>
     <copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-    <lastBuildDate>Wed, 29 May 2024 06:21:13 +0000</lastBuildDate>
-    
-	<atom:link href="https://maxmcd.com/tags/val.town/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 29 May 2024 12:29:31 -0400</lastBuildDate>
+    <atom:link href="https://maxmcd.com/tags/val.town/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Running Go on Val Town</title>
       <link>https://maxmcd.com/posts/running-go-on-val-town/</link>
       <pubDate>Wed, 29 May 2024 06:21:13 +0000</pubDate>
-      
       <guid>https://maxmcd.com/posts/running-go-on-val-town/</guid>
-      <description>Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on Val Town and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?
- If you want to skip all this and just run Go on Val Town you can follow the instructions here.</description>
+      <description>&lt;p&gt;&lt;img src=&#34;https://imagedelivery.net/iHX6Ovru0O7AjmyT5yZRoA/dce5f555-86e1-4f98-8471-f0641a34e200/public&#34; alt=&#34;image.png&#34;&gt;&lt;/p&gt;&#xA;&lt;p&gt;Let&amp;rsquo;s go on a winding debugging adventure together. I thought I could get a Go HTTP handler running on &lt;a href=&#34;https://val.town&#34;&gt;Val Town&lt;/a&gt; and I thought it would be easy. Val Town is a social website to write and deploy Typescipt. Val Town doesn&amp;rsquo;t support Go, but it supports WASM. Can we make it all work!?&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;If you want to skip all this and just run Go on Val Town you can &lt;a href=&#34;https://www.val.town/v/maxm/compileAndUploadTinygoWasm&#34;&gt;follow the instructions here&lt;/a&gt;. There&amp;rsquo;s also a &lt;a href=&#34;https://www.val.town/v/maxm/tinygoWasmHelloWorld&#34;&gt;basic &amp;ldquo;Hello World&amp;rdquo;&lt;/a&gt; example, and another that&amp;rsquo;s &lt;a href=&#34;https://www.val.town/v/maxm/tinygoHttpExample&#34;&gt;much more fun and complex&lt;/a&gt;.&lt;/p&gt;</description>
     </item>
-    
   </channel>
 </rss>
