@@ -63,23 +63,11 @@ code_copy_button = true # Turn on/off the code-copy-button for code-fields
 
 # Social Icons
 # Check https://github.com/Track3/hermit#social-icons for more info.
-[[params.social]]
-name = "twitter"
-url = "https://twitter.com/mxmcd"
 
 [[params.social]]
 name = "github"
-url = "https://github.com/maxmcd"
+url = "https://github.com/maxmcd/blog"
 
 
 [menu]
 
-[[menu.main]]
-name = "Posts"
-url = "posts/"
-weight = 10
-
-[[menu.main]]
-name = "About"
-url = "about/"
-weight = 20
