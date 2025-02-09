@@ -14,7 +14,6 @@ enableEmoji = true                                                              
 relativeURLs = false
 contentDir = "content"
 
-
 [blackfriday]
 # hrefTargetBlank = true
 # noreferrerLinks = true
@@ -44,6 +43,9 @@ themeColor = "#494f5c"
 
 homeSubtitle = ""
 footerCopyright = ''
+
+disableComments = true
+
 # bgImg = ""  # Homepage background-image URL
 
 # Prefix of link to the git commit detail page. GitInfo must be enabled.
