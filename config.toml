@@ -31,8 +31,8 @@ tag = "tags"
 
 [params]
 author = "Max McDonnell"
-dateform = "Jan 02, 2006"
-dateformShort = "Jan 02"
+dateform = "January 2, 2006"
+dateformShort = "January 2"
 dateformNum = "2006-01-02"
 dateformNumTime = "2006-01-02 15:04 UTC"
 
