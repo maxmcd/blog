@@ -6,8 +6,198 @@
 		<generator>Hugo -- gohugo.io</generator>
 		<language>en-us</language>
 		<copyright>This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.</copyright>
-		<lastBuildDate>Fri, 12 Jul 2024 00:00:00 +0000</lastBuildDate>
+		<lastBuildDate>Mon, 17 Feb 2025 01:29:25 +0000</lastBuildDate>
 		<atom:link href="https://maxmcd.com/posts/index.xml" rel="self" type="application/rss+xml" />
+		
+		<item>
+			<title>HTTP3, 2, 1</title>
+			<link>https://maxmcd.com/posts/http321/</link>
+			<pubDate>Mon, 17 Feb 2025 01:29:25 +0000</pubDate>
+			
+			<guid>https://maxmcd.com/posts/http321/</guid>
+			<description>&lt;p&gt;HTTP1 is simple and easy. With enough care you can open a TCP connection and
+hand-write an HTTP request to a server and get a response. Good fun.&lt;/p&gt;
+&lt;p&gt;HTTP2 is more complex. Multiple bidirectional requests can be multiplexed over a
+single connection. You might use it with something like GRPC, or to get web
+pages to load faster.&lt;/p&gt;
+&lt;p&gt;HTTP3 is wild stuff. Implemented over UDP instead of TCP. You can open a
+connection, open streams on that connection, send data with different types of
+ordering and deliverability guarantees.&lt;/p&gt;</description>
+			<content type="html"><![CDATA[<p>HTTP1 is simple and easy. With enough care you can open a TCP connection and
+hand-write an HTTP request to a server and get a response. Good fun.</p>
+<p>HTTP2 is more complex. Multiple bidirectional requests can be multiplexed over a
+single connection. You might use it with something like GRPC, or to get web
+pages to load faster.</p>
+<p>HTTP3 is wild stuff. Implemented over UDP instead of TCP. You can open a
+connection, open streams on that connection, send data with different types of
+ordering and deliverability guarantees.</p>
+<p>I&rsquo;ve mostly known HTTP3 as a thing
+<a href="https://blog.cloudflare.com/http3-usage-one-year-on/">that big tech companies use</a>
+to eek out more efficiency. Recently I was experimenting with HTTP3+Go to do
+network tunnelling and got exposed to more of its features.</p>
+<p>Let&rsquo;s use what I&rsquo;ve learned and have a bit of weird fun. If HTTP3 can do ordered
+streams then surely we can stream HTTP2 within an HTTP3 connection? And if HTTP2
+can do bidirectional streaming over a single connection then surely you can
+implement HTTP1 over it? Right?</p>
+<p><img src="../http31-t.png" alt=""></p>
+<p>The code is <a href="https://github.com/maxmcd/http321">here</a>, and each of these
+sections has a corresponding test in
+<a href="https://github.com/maxmcd/http321/blob/main/http321_test.go"><code>http321_test.go</code></a>
+if you&rsquo;d like to follow along with greater detail</p>
+<h2 id="http3">HTTP3</h2>
+<p>We can start a listener, connect to it, and open a stream:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">listener</span> <span class="o">:=</span> <span class="nf">NewHTTP3Listener</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span> <span class="c1">// listen</span>
+</span></span><span class="line"><span class="cl"><span class="nx">conn</span> <span class="o">:=</span> <span class="nf">DialListener</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">listener</span><span class="p">)</span> <span class="c1">// dial the listener</span>
+</span></span><span class="line"><span class="cl"><span class="nx">serverConn</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">listener</span><span class="p">.</span><span class="nf">Accept</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span> <span class="c1">// accept the dialed connection</span>
+</span></span><span class="line"><span class="cl"><span class="nx">stream</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">conn</span><span class="p">.</span><span class="nf">OpenStream</span><span class="p">()</span> <span class="c1">// open a stream</span>
+</span></span><span class="line"><span class="cl"><span class="nx">serverStream</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">serverConn</span><span class="p">.</span><span class="nf">AcceptStream</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span> <span class="c1">// accept the stream</span>
+</span></span><span class="line"><span class="cl"><span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">stream</span><span class="p">.</span><span class="nf">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&#34;hello&#34;</span><span class="p">))</span> <span class="c1">// write bytes</span>
+</span></span><span class="line"><span class="cl"><span class="nx">buf</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">byte</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">ReadFull</span><span class="p">(</span><span class="nx">serverStream</span><span class="p">,</span> <span class="nx">buf</span><span class="p">)</span> <span class="c1">// read them</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nx">buf</span><span class="p">))</span> <span class="c1">// =&gt; &#34;hello&#34;</span>
+</span></span></code></pre></div><p>The stream we&rsquo;re opening is reliable, and ordered. Each connection can open many
+streams. Straightforward enough.</p>
+<h2 id="http32">HTTP3+2</h2>
+<p>In order to make an HTTP2 connection we&rsquo;re going to need to &ldquo;dial&rdquo; the other
+server. Normally this would be a <code>net.Dial</code> call and new TCP connection. Here,
+we&rsquo;re going to call <code>conn.OpenStream()</code> and wrap the stream up into a
+<code>net.Conn</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">QuicConnDial</span><span class="p">(</span><span class="nx">conn</span> <span class="nx">quic</span><span class="p">.</span><span class="nx">Connection</span><span class="p">)</span> <span class="p">(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">stream</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">conn</span><span class="p">.</span><span class="nf">OpenStreamSync</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">ReadWriteConn</span><span class="p">{</span><span class="nx">Reader</span><span class="p">:</span> <span class="nx">stream</span><span class="p">,</span> <span class="nx">Writer</span><span class="p">:</span> <span class="nx">stream</span><span class="p">,</span> <span class="nx">Closer</span><span class="p">:</span> <span class="nx">stream</span><span class="p">},</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p><a href="https://github.com/maxmcd/http321/blob/20288160f5b1a0fa208aca7c15d31e2cd0e49963/http321.go#L43"><code>ReadWriteConn</code></a>
+takes our stream and wraps it up wth some dummy methods to behave like a
+<code>net.Conn</code>.</p>
+<p>On the other end we&rsquo;ll need to implement a
+<a href="https://pkg.go.dev/net#Listener"><code>net.Listener</code></a>. When the listener calls
+<code>conn, err := listener.Accept()</code>, instead of accepting a new TCP stream we&rsquo;re
+going to call <code>serverConn.AcceptStream</code> and wrap the returned stream up as a
+connection.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">l</span> <span class="o">*</span><span class="nx">QuicNetListener</span><span class="p">)</span> <span class="nf">Accept</span><span class="p">()</span> <span class="p">(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">stream</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">l</span><span class="p">.</span><span class="nx">Connection</span><span class="p">.</span><span class="nf">AcceptStream</span><span class="p">(</span><span class="nx">context</span><span class="p">.</span><span class="nf">Background</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">ReadWriteConn</span><span class="p">{</span><span class="nx">Reader</span><span class="p">:</span> <span class="nx">stream</span><span class="p">,</span> <span class="nx">Writer</span><span class="p">:</span> <span class="nx">stream</span><span class="p">,</span> <span class="nx">Closer</span><span class="p">:</span> <span class="nx">stream</span><span class="p">},</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>With those bits, we can string it all together:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">listener</span> <span class="o">:=</span> <span class="nf">NewHTTP3Listener</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">conn</span> <span class="o">:=</span> <span class="nf">DialListener</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">listener</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">serverConn</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">listener</span><span class="p">.</span><span class="nf">Accept</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span> <span class="c1">// Connect HTTP3</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">netListener</span> <span class="o">:=</span> <span class="nx">QuicNetListener</span><span class="p">{</span><span class="nx">Connection</span><span class="p">:</span> <span class="nx">serverConn</span><span class="p">}</span> <span class="c1">// Make the net.Listener</span>
+</span></span><span class="line"><span class="cl"><span class="nx">http2Server</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span><span class="nx">Handler</span><span class="p">:</span> <span class="nx">h2c</span><span class="p">.</span><span class="nf">NewHandler</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}),</span> <span class="o">&amp;</span><span class="nx">http2</span><span class="p">.</span><span class="nx">Server</span><span class="p">{},</span>
+</span></span><span class="line"><span class="cl"><span class="p">)}</span> <span class="c1">// Configure our http2 handler</span>
+</span></span><span class="line"><span class="cl"><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">http2Server</span><span class="p">.</span><span class="nf">Serve</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">netListener</span><span class="p">)}()</span> <span class="c1">// run the server over our listener</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">client</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Client</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Transport</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">http2</span><span class="p">.</span><span class="nx">Transport</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">AllowHTTP</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="c1">// Allow unencrypted http2</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">DialTLSContext</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">ctx</span> <span class="nx">context</span><span class="p">.</span><span class="nx">Context</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">network</span><span class="p">,</span> <span class="nx">addr</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">cfg</span> <span class="o">*</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">)</span> <span class="p">(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nf">QuicConnDial</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="c1">// Create an HTTP2 client that uses our QuicConnDial</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;http://any.domain&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="c1">// =&gt; OK 200 HTTP/2.0</span>
+</span></span></code></pre></div><p>There we have it. HTTP2 within HTTP3.
+<a href="https://github.com/maxmcd/http321/blob/20288160f5b1a0fa208aca7c15d31e2cd0e49963/http321_test.go#L80-L141">Here&rsquo;s a test</a>
+that fires of 10 requests to an http2 server that runs
+<code>time.Sleep(time.Millisecond * 100)</code>. Each request is made over the same
+connection and all the requests return in ~100ms total.</p>
+<h2 id="http321">HTTP3+2+1</h2>
+<p>In order to get HTTP1 working, we need to do the same task over again. We need
+to implement a <code>dial</code> function and a <code>net.Listener</code>, but this time over a
+streaming HTTP2 request. It was tricky to get this working, and my final version
+fails in certain situations.
+<a href="https://github.com/golang/go/issues/13444">This issue</a> was helpful in
+confirming the basic patterns that needed to be set up.</p>
+<p>Here&rsquo;s the <code>net.Listener</code> implementation</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">l</span> <span class="o">*</span><span class="nx">HTTP2OverQuicListener</span><span class="p">)</span> <span class="nf">Accept</span><span class="p">()</span> <span class="p">(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">l</span><span class="p">.</span><span class="nx">once</span><span class="p">.</span><span class="nf">Do</span><span class="p">(</span><span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">l</span><span class="p">.</span><span class="nx">conns</span> <span class="p">=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">handler</span> <span class="o">:=</span> <span class="nx">h2c</span><span class="p">.</span><span class="nf">NewHandler</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">w</span><span class="p">.</span><span class="nf">WriteHeader</span><span class="p">(</span><span class="mi">200</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">pReader</span><span class="p">,</span> <span class="nx">pWriter</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">Pipe</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">l</span><span class="p">.</span><span class="nx">conns</span> <span class="o">&lt;-</span> <span class="o">&amp;</span><span class="nx">ReadWriteConn</span><span class="p">{</span><span class="nx">Reader</span><span class="p">:</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">,</span> <span class="nx">Writer</span><span class="p">:</span> <span class="nx">pWriter</span><span class="p">,</span> <span class="nx">Closer</span><span class="p">:</span> <span class="nx">r</span><span class="p">.</span><span class="nx">Body</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">Copy</span><span class="p">(</span><span class="nx">flushWriter</span><span class="p">{</span><span class="nx">w</span><span class="p">},</span> <span class="nx">pReader</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}),</span> <span class="o">&amp;</span><span class="nx">http2</span><span class="p">.</span><span class="nx">Server</span><span class="p">{})</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">http2Server</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Server</span><span class="p">{</span><span class="nx">Handler</span><span class="p">:</span> <span class="nx">handler</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">http2Server</span><span class="p">.</span><span class="nf">Serve</span><span class="p">(</span><span class="nx">l</span><span class="p">.</span><span class="nx">listener</span><span class="p">)</span> <span class="p">}()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">})</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&lt;-</span><span class="nx">l</span><span class="p">.</span><span class="nx">conns</span><span class="p">,</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>The first time we call <code>Accept</code> we use a
+<a href="https://pkg.go.dev/sync#Once"><code>sync.Once</code></a> to start an http server. When a new
+request comes in we turn the request body and response in to a <code>net.Conn</code>. We
+use a pipe, and an <code>io.Copy</code> for this so that the request is held open until the
+connection is closed. Note the use of <code>flushWriter</code> to make sure we&rsquo;re flushing
+the response bytes back over the connection.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="kd">func</span> <span class="nf">HTTP2OverQuicDial</span><span class="p">(</span><span class="nx">conn</span> <span class="nx">quic</span><span class="p">.</span><span class="nx">Connection</span><span class="p">)</span> <span class="p">(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">client</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Client</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Transport</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">http2</span><span class="p">.</span><span class="nx">Transport</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">AllowHTTP</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="nx">DialTLS</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">network</span><span class="p">,</span> <span class="nx">addr</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">cfg</span> <span class="o">*</span><span class="nx">tls</span><span class="p">.</span><span class="nx">Config</span><span class="p">)</span> <span class="p">(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span> <span class="nf">QuicConnDial</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">},</span>
+</span></span><span class="line"><span class="cl">		<span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">inReader</span><span class="p">,</span> <span class="nx">inWriter</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">Pipe</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">outReader</span><span class="p">,</span> <span class="nx">outWriter</span> <span class="o">:=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">Pipe</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">req</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">NewRequest</span><span class="p">(</span><span class="nx">http</span><span class="p">.</span><span class="nx">MethodPost</span><span class="p">,</span> <span class="s">&#34;http://any.domain&#34;</span><span class="p">,</span> <span class="nx">io</span><span class="p">.</span><span class="nf">NopCloser</span><span class="p">(</span><span class="nx">inReader</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span> <span class="kc">nil</span><span class="p">,</span> <span class="nx">err</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">resp</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Do</span><span class="p">(</span><span class="nx">req</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">_</span><span class="p">,</span> <span class="nx">_</span> <span class="p">=</span> <span class="nx">io</span><span class="p">.</span><span class="nf">Copy</span><span class="p">(</span><span class="nx">outWriter</span><span class="p">,</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">Body</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}()</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">time</span><span class="p">.</span><span class="nf">Sleep</span><span class="p">(</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="p">)</span> <span class="c1">// :(</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">ReadWriteConn</span><span class="p">{</span><span class="nx">Reader</span><span class="p">:</span> <span class="nx">outReader</span><span class="p">,</span> <span class="nx">Writer</span><span class="p">:</span> <span class="nx">inWriter</span><span class="p">,</span> <span class="nx">Closer</span><span class="p">:</span> <span class="nx">outReader</span><span class="p">},</span> <span class="kc">nil</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Dial is similar. Open an http2 request and start copying the bytes into a
+connection. This ended up being a bit unreliable and I&rsquo;m still not sure why.
+That <code>time.Sleep</code> is sadly working to prevent a deadlock that popped up from
+time to time.</p>
+<p>With those complete, we can string together our network request.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="line"><span class="cl"><span class="nx">listener</span> <span class="o">:=</span> <span class="nf">NewHTTP3Listener</span><span class="p">(</span><span class="nx">t</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">conn</span> <span class="o">:=</span> <span class="nf">DialListener</span><span class="p">(</span><span class="nx">t</span><span class="p">,</span> <span class="nx">listener</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">serverConn</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">listener</span><span class="p">.</span><span class="nf">Accept</span><span class="p">(</span><span class="nx">ctx</span><span class="p">)</span> <span class="c1">// Connect HTTP3</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">netListener</span> <span class="o">:=</span> <span class="nx">QuicNetListener</span><span class="p">{</span><span class="nx">Connection</span><span class="p">:</span> <span class="nx">serverConn</span><span class="p">}</span> <span class="c1">// Listener</span>
+</span></span><span class="line"><span class="cl"><span class="nx">http2Listener</span> <span class="o">:=</span> <span class="nx">HTTP2OverQuicListener</span><span class="p">{</span><span class="nx">listener</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">netListener</span><span class="p">}</span> <span class="c1">// Listener over HTTP2</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">_</span> <span class="p">=</span> <span class="nx">http</span><span class="p">.</span><span class="nf">Serve</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">http2Listener</span><span class="p">,</span> <span class="nx">http</span><span class="p">.</span><span class="nf">HandlerFunc</span><span class="p">(</span><span class="kd">func</span><span class="p">(</span><span class="nx">w</span> <span class="nx">http</span><span class="p">.</span><span class="nx">ResponseWriter</span><span class="p">,</span> <span class="nx">r</span> <span class="o">*</span><span class="nx">http</span><span class="p">.</span><span class="nx">Request</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Fprintf</span><span class="p">(</span><span class="nx">w</span><span class="p">,</span> <span class="s">&#34;I&#39;m http1! 🐢🐢🐢&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}))</span>
+</span></span><span class="line"><span class="cl"><span class="p">}()</span> <span class="c1">// Run our HTTP server.</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="nx">client</span> <span class="o">:=</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Client</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="nx">Transport</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">http</span><span class="p">.</span><span class="nx">Transport</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="nx">Dial</span><span class="p">:</span> <span class="kd">func</span><span class="p">(</span><span class="nx">network</span><span class="p">,</span> <span class="nx">addr</span> <span class="kt">string</span><span class="p">)</span> <span class="p">(</span><span class="nx">net</span><span class="p">.</span><span class="nx">Conn</span><span class="p">,</span> <span class="kt">error</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nf">HTTP2OverQuicDial</span><span class="p">(</span><span class="nx">conn</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">},</span>
+</span></span><span class="line"><span class="cl">	<span class="p">},</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;http://any.domain&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="c1">// =&gt; OK 200 HTTP/1.1</span>
+</span></span></code></pre></div><p>Woo! 🎉</p>
+<hr>
+<p>Fun? Useful? Maybe.</p>
+<p>I did try to get websockets working over the HTTP1 handler, but it was unhappy
+with my very fake <code>net.Conn</code>. Until next time, happy tunneling!</p>
+]]></content>
+		</item>
 		
 		<item>
 			<title>Can We Improve Process Per Request Performance in Node</title>
