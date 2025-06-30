@@ -27,10 +27,9 @@ I've mostly known HTTP3 as a thing
 to eek out more efficiency. Recently I was experimenting with HTTP3+Go to do
 network tunnelling and got exposed to more of its features.
 
-Let's use what I've learned and have a bit of weird fun. If HTTP3 can do ordered
-streams then surely we can stream HTTP2 within an HTTP3 connection? And if HTTP2
-can do bidirectional streaming over a single connection then surely you can
-implement HTTP1 over it? Right?
+If HTTP3 can do ordered streams then surely we can stream HTTP2 within an HTTP3
+connection? And if HTTP2 can do bidirectional streaming over a single connection
+then surely you can implement HTTP1 over it? Right?
 
 ![](../http31-t.png)
 
@@ -103,12 +102,22 @@ conn := DialListener(t, listener)
 serverConn, _ := listener.Accept(ctx) // Connect HTTP3
 
 netListener := QuicNetListener{Connection: serverConn} // Make the net.Listener
-http2Server := &http.Server{Handler: h2c.NewHandler(
+handle := h2c.NewHandler(
 	http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 	}), &http2.Server{},
-)} // Configure our http2 handler
-go func() { _ = http2Server.Serve(&netListener)}() // run the server over our listener
+) // Configure our http2 handler
+go func() {
+	for {
+		conn, err := l.listener.Accept()
+		if err != nil {
+			break
+		}
+		go (&http2.Server{}).ServeConn(conn, &http2.ServeConnOpts{
+			Handler: handler,
+		})
+	}
+}() // Use http2.ServeConn to run the handler over the connection.
 
 client := &http.Client{
 	Transport: &http2.Transport{
@@ -151,8 +160,17 @@ func (l *HTTP2OverQuicListener) Accept() (net.Conn, error) {
 			l.conns <- &ReadWriteConn{Reader: r.Body, Writer: pWriter, Closer: r.Body}
 			_, _ = io.Copy(flushWriter{w}, pReader)
 		}), &http2.Server{})
-		http2Server := &http.Server{Handler: handler}
-		go func() { _ = http2Server.Serve(l.listener) }()
+		go func() {
+			for {
+				conn, err := l.listener.Accept()
+				if err != nil {
+					break
+				}
+				go (&http2.Server{}).ServeConn(conn, &http2.ServeConnOpts{
+					Handler: handler,
+				})
+			}
+		}()
 	})
 	return <-l.conns, nil
 }
@@ -185,15 +203,12 @@ func HTTP2OverQuicDial(conn quic.Connection) (net.Conn, error) {
 		resp, _ := client.Do(req)
 		_, _ = io.Copy(outWriter, resp.Body)
 	}()
-	time.Sleep(1 * time.Millisecond) // :(
 	return &ReadWriteConn{Reader: outReader, Writer: inWriter, Closer: outReader}, nil
 }
 ```
 
 Dial is similar. Open an http2 request and start copying the bytes into a
-connection. This ended up being a bit unreliable and I'm still not sure why.
-That `time.Sleep` is sadly working to prevent a deadlock that popped up from
-time to time.
+connection.
 
 With those complete, we can string together our network request.
 
