@@ -22,5 +22,5 @@ way. I can always go outside and interact with real people.
 
 I liked the very fine details of the internet. I liked to craft and I like to
 see the craft of others. Now the internet feels less human, harder to take in
-directly. Maybe this is always the way it's been, but sometimes I'm sad about
-it.
+directly. Maybe this has always been the evolution of things, but sometimes I'm
+sad about it.
