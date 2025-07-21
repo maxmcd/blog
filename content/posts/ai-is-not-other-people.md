@@ -19,5 +19,6 @@ There's nothing wrong with this. I will go outside more and sit in the park. The
 AI can't draw chalk drawings on the sidewalk just yet.
 
 I liked the very fine details of the internet. I liked to craft and I like to
-see the craft of others. Now the internet feels less human. We've always known.
-Maybe this is always the way it's been, but sometimes I'm sad about it.
+see the craft of others. Now the internet feels less human. Or at least I need
+to think about how it's connected to humans in a very different way. Maybe this
+is always the way it's been, but sometimes I'm sad about it.
