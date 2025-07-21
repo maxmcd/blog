@@ -15,10 +15,12 @@ suspicious. Did someone make this? How much? How much humanity is in this? If I
 like a part of it, or see a familiar pattern, can I empathize with the person
 making it, or was this all cooked up by a small number of keystrokes.
 
-There's nothing wrong with this. I will go outside more and sit in the park. The
-AI can't draw chalk drawings on the sidewalk just yet.
+There's nothing really wrong with this. I know it is still humans making stuff.
+These are new and different tools. I use them too, there are paths to empathy.
+Maybe I need to think about how it's connected to humans in a very different
+way. I can always go outside and interact with real people.
 
 I liked the very fine details of the internet. I liked to craft and I like to
-see the craft of others. Now the internet feels less human. Or at least I need
-to think about how it's connected to humans in a very different way. Maybe this
-is always the way it's been, but sometimes I'm sad about it.
+see the craft of others. Now the internet feels less human, harder to take in
+directly. Maybe this is always the way it's been, but sometimes I'm sad about
+it.
