@@ -126,8 +126,7 @@ connection and all the requests return in ~100ms total.</p>
 <h2 id="http321">HTTP3+2+1</h2>
 <p>In order to get HTTP1 working, we need to do the same task over again. We need
 to implement a <code>dial</code> function and a <code>net.Listener</code>, but this time over a
-streaming HTTP2 request. It was tricky to get this working, and my final version
-fails in certain situations.
+streaming HTTP2 request. It was tricky to get this working,
 <a href="https://github.com/golang/go/issues/13444">This issue</a> was helpful in
 confirming the basic patterns that needed to be set up.</p>
 <p>Here&rsquo;s the <code>net.Listener</code> implementation</p>
