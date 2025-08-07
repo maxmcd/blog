@@ -206,10 +206,11 @@ connection.</p>
 </span></span><span class="line"><span class="cl"><span class="nx">resp</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">client</span><span class="p">.</span><span class="nf">Get</span><span class="p">(</span><span class="s">&#34;http://any.domain&#34;</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">resp</span><span class="p">)</span> <span class="c1">// =&gt; OK 200 HTTP/1.1</span>
 </span></span></code></pre></div><p>Woo! 🎉</p>
-<hr>
-<p>Fun? Useful? Maybe.</p>
-<p>I did try to get websockets working over the HTTP1 handler, but it was unhappy
-with my very fake <code>net.Conn</code>. Until next time, happy tunneling!</p>
+<p>There we have it. An http1 request, that is running over an http2 connection,
+that is running over an http3 connection.</p>
+<p>I did try to go one more level and get websockets working over the HTTP1
+handler, but it was unhappy with my very fake <code>net.Conn</code>. Until next time, happy
+tunneling!</p>
 ]]></content>
 		</item>
 		
