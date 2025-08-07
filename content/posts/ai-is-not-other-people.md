@@ -1,7 +1,7 @@
 ---
 title: "AI Is Not Other People"
 date: 2025-07-21T01:29:25Z
-draft: false
+draft: true
 images:
 ---
 
