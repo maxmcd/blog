@@ -238,9 +238,9 @@ fmt.Println(resp) // => OK 200 HTTP/1.1
 
 Woo! 🎉
 
----
+There we have it. An http1 request, that is running over an http2 connection,
+that is running over an http3 connection.
 
-Fun? Useful? Maybe.
-
-I did try to get websockets working over the HTTP1 handler, but it was unhappy
-with my very fake `net.Conn`. Until next time, happy tunneling!
+I did try to go one more level and get websockets working over the HTTP1
+handler, but it was unhappy with my very fake `net.Conn`. Until next time, happy
+tunneling!
