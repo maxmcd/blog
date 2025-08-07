@@ -143,8 +143,7 @@ connection and all the requests return in ~100ms total.
 
 In order to get HTTP1 working, we need to do the same task over again. We need
 to implement a `dial` function and a `net.Listener`, but this time over a
-streaming HTTP2 request. It was tricky to get this working, and my final version
-fails in certain situations.
+streaming HTTP2 request. It was tricky to get this working,
 [This issue](https://github.com/golang/go/issues/13444) was helpful in
 confirming the basic patterns that needed to be set up.
 
